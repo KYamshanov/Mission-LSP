@@ -18,10 +18,25 @@ kotlin {
     }
 
     sourceSets {
+
         commonMain.dependencies {
-            //decompose
             implementation(libs.decompose)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.ktor.core)
+            implementation(libs.ktor.client.negotiation)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.ktor.client.auth)
+            implementation(libs.ktor.serialization.json)
+            implementation(libs.napier)//logging engine
+        }
+
+        androidMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
+        }
+
+        jvmMain.dependencies {
+            implementation(libs.ktor.client.cio)
         }
     }
 }
