@@ -26,3 +26,10 @@ Use `Default` prefix to mark implementation of Component leads to difficult iden
 class implement.\
 Use Impl suffix if component have only one implementation. If component has more than one implementations each implementation have to specific prefix\
 Implementation of component have to lie at `impl` folder
+
+DI:
+at the moment heart-LSP doesn`t use any DI framework. Becouse it contradicts to main idiom.\
+We explicit create any instance of class.
+
+circular dependencies:
+To resolve cirucular depencencies you have to seporate methods to delegate. And provide interface to each depend`s class
