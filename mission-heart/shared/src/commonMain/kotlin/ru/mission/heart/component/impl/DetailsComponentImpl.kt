@@ -1,10 +1,11 @@
-package ru.mission.heart
+package ru.mission.heart.impl
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
+import ru.mission.heart.DetailsComponent
 
-class DefaultDetailsComponent(
+internal class DetailsComponentImpl(
     componentContext: ComponentContext,
     title: String,
     private val onFinished: () -> Unit,

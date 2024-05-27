@@ -8,9 +8,10 @@ import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 
 @Composable
-fun SplashContent(component: SplashComponent, modifier: Modifier = Modifier) {
+fun DetailsContent(component: DetailsComponent, modifier: Modifier = Modifier) {
     val model by component.model.subscribeAsState()
 
     Text(text = model.title, modifier = Modifier.clickable {
+        component.finish()
     })
 }

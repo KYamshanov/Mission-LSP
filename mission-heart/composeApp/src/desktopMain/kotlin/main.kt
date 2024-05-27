@@ -5,7 +5,7 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import ru.mission.heart.App
-import ru.mission.heart.DefaultRootComponent
+import ru.mission.heart.component.factory.RootComponentFactory
 
 fun main() {
     val lifecycle = LifecycleRegistry()
@@ -13,7 +13,7 @@ fun main() {
     // Always create the root component outside Compose on the UI thread
     val root =
         runOnUiThread {
-            DefaultRootComponent(
+            RootComponentFactory().invoke(
                 componentContext = DefaultComponentContext(lifecycle = lifecycle),
             )
         }

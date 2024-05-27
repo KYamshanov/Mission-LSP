@@ -1,18 +1,17 @@
 package ru.mission.heart
 
-import App
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import com.arkivanov.decompose.defaultComponentContext
+import ru.mission.heart.component.factory.RootComponentFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val root =
-            DefaultRootComponent(
+            RootComponentFactory().invoke(
                 componentContext = defaultComponentContext(),
             )
 
@@ -20,10 +19,4 @@ class MainActivity : ComponentActivity() {
             App(root)
         }
     }
-}
-
-@Preview
-@Composable
-fun AppAndroidPreview() {
-    App()
 }

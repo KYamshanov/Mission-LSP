@@ -14,5 +14,6 @@ interface RootComponent {
     sealed class Child {
         class ListChild(val component: ListComponent) : Child()
         class DetailsChild(val component: DetailsComponent) : Child()
+        class SplashChild(val component: SplashComponent) : Child()
     }
 }
