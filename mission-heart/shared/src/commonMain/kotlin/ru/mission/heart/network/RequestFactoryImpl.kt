@@ -16,7 +16,7 @@ import ru.mission.heart.session.SessionInteractor
 
 internal class RequestFactoryImpl(
     private val config: NetworkConfig,
-    private val sessionInteractor: SessionInteractor,
+    private val sessionInteractor: Lazy<SessionInteractor>,
 ) : RequestFactory {
 
     private val client = httpClient {
@@ -45,7 +45,7 @@ internal class RequestFactoryImpl(
                 }
                 refreshTokens {
                     try {
-                        val session = sessionInteractor.refresh()
+                        val session = sessionInteractor.value.refresh()
                         if (session !is AccessToken) {
                             throw IllegalStateException("Refresh session has no access token")
                         }
@@ -76,7 +76,7 @@ internal class RequestFactoryImpl(
         client.patch(endpoint, block)
 
     private fun getAuthorizationHeader(): String? =
-        (sessionInteractor.state.value as? AccessToken)?.accessToken
+        (sessionInteractor.value.state.value as? AccessToken)?.accessToken
 
     private inner class NetworkLogger : Logger {
 

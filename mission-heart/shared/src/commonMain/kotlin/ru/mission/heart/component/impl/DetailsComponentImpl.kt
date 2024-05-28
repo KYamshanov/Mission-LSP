@@ -3,7 +3,7 @@ package ru.mission.heart.impl
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
-import ru.mission.heart.DetailsComponent
+import ru.mission.heart.component.DetailsComponent
 
 internal class DetailsComponentImpl(
     componentContext: ComponentContext,

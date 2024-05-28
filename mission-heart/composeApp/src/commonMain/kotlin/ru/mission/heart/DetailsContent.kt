@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import ru.mission.heart.component.SplashComponent
 
 @Composable
 fun SplashContent(component: SplashComponent, modifier: Modifier = Modifier) {

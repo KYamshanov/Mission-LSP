@@ -1,4 +1,4 @@
-package ru.mission.heart
+package ru.mission.heart.component
 
 import com.arkivanov.decompose.value.Value
 

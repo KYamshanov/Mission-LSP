@@ -15,9 +15,14 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import ru.mission.heart.*
-import ru.mission.heart.RootComponent.Child.DetailsChild
-import ru.mission.heart.RootComponent.Child.ListChild
+import ru.mission.heart.component.DetailsComponent
+import ru.mission.heart.component.ListComponent
+import ru.mission.heart.component.RootComponent
+import ru.mission.heart.component.RootComponent.Child.DetailsChild
+import ru.mission.heart.component.RootComponent.Child.ListChild
+import ru.mission.heart.component.SplashComponent
+import ru.mission.heart.component.impl.DefaultListComponent
+import ru.mission.heart.component.impl.SplashComponentImpl
 import ru.mission.heart.session.*
 import ru.mission.heart.session.SessionInteractor
 
@@ -42,7 +47,7 @@ internal class RootComponentImpl(
     private val coroutineScope = CoroutineScope(SupervisorJob())
 
     init {
-        doOnDestroy { coroutineScope.cancel("Component is going to desctory") }
+        doOnDestroy { coroutineScope.cancel("Component is going to destory") }
 
         coroutineScope.launch {
             retainedAppInitializer.sharedActions.collect {

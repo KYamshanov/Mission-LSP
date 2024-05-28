@@ -1,8 +1,9 @@
-package ru.mission.heart
+package ru.mission.heart.component.impl
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
+import ru.mission.heart.component.ListComponent
 
 class DefaultListComponent(
     componentContext: ComponentContext,

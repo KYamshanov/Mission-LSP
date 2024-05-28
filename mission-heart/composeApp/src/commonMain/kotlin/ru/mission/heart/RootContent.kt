@@ -5,7 +5,8 @@ import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.fade
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
-import ru.mission.heart.RootComponent.Child.*
+import ru.mission.heart.component.RootComponent
+import ru.mission.heart.component.RootComponent.Child.*
 
 @Composable
 fun RootContent(component: RootComponent, modifier: Modifier = Modifier) {

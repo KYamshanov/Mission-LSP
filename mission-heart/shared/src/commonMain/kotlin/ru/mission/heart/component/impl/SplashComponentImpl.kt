@@ -1,9 +1,9 @@
-package ru.mission.heart.impl
+package ru.mission.heart.component.impl
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
-import ru.mission.heart.SplashComponent
+import ru.mission.heart.component.SplashComponent
 
 class SplashComponentImpl(
     componentContext: ComponentContext
