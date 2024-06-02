@@ -5,7 +5,7 @@ import android.content.Context.MODE_PRIVATE
 import ru.mission.heart.storage.Preferences
 
 
-internal class PreferencesAndroidImpl constructor(
+internal class AndroidPreferencesImpl constructor(
     applicationContext: Context,
 ) : Preferences {
 

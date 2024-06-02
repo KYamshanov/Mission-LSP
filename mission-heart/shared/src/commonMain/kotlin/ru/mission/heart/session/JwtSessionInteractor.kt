@@ -41,7 +41,6 @@ internal class JwtSessionInteractor(
     }
 
     override suspend fun refresh(): Session {
-        println("TESTTTTT")
         val refreshToken: String = checkNotNull(preferences.getValue(refreshTokenKey)) { "Access token has not set" }
         val session =
             try {

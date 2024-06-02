@@ -1,4 +1,4 @@
-package ru.mission.heart.impl
+package ru.mission.heart.component.impl
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.*
@@ -6,29 +6,24 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import com.arkivanov.essenty.lifecycle.doOnDestroy
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import ru.mission.heart.component.DetailsComponent
-import ru.mission.heart.component.ListComponent
-import ru.mission.heart.component.RootComponent
+import ru.mission.heart.component.*
 import ru.mission.heart.component.RootComponent.Child.DetailsChild
 import ru.mission.heart.component.RootComponent.Child.ListChild
-import ru.mission.heart.component.SplashComponent
-import ru.mission.heart.component.impl.DefaultListComponent
-import ru.mission.heart.component.impl.SplashComponentImpl
+import ru.mission.heart.component.factory.LoginComponentFactory
 import ru.mission.heart.session.*
 import ru.mission.heart.session.SessionInteractor
 
 internal class RootComponentImpl(
     componentContext: ComponentContext,
     sessionInteractor: SessionInteractor,
+    mainDispatcher: CoroutineDispatcher,
+    private val loginComponentFactory: LoginComponentFactory
 ) : RootComponent, ComponentContext by componentContext {
 
     private val navigation = StackNavigation<Config>()
@@ -44,7 +39,7 @@ internal class RootComponentImpl(
             childFactory = ::child,
         )
 
-    private val coroutineScope = CoroutineScope(SupervisorJob())
+    private val coroutineScope = CoroutineScope(SupervisorJob() + mainDispatcher)
 
     init {
         doOnDestroy { coroutineScope.cancel("Component is going to destory") }
@@ -63,6 +58,7 @@ internal class RootComponentImpl(
             is Config.List -> ListChild(listComponent(componentContext))
             is Config.Details -> DetailsChild(detailsComponent(componentContext, config))
             is Config.Splash -> RootComponent.Child.SplashChild(splashComponent(componentContext, config))
+            is Config.Login -> RootComponent.Child.LoginChild(loginComponent(componentContext, config))
         }
 
     private fun listComponent(componentContext: ComponentContext): ListComponent =
@@ -85,6 +81,13 @@ internal class RootComponentImpl(
             componentContext = componentContext,
         )
 
+
+    private fun loginComponent(componentContext: ComponentContext, config: Config.Login): LoginComponent =
+        loginComponentFactory.create(
+            componentContext = componentContext
+        )
+
+
     override fun onBackClicked(toIndex: Int) {
         navigation.popTo(index = toIndex)
     }
@@ -99,6 +102,9 @@ internal class RootComponentImpl(
         data object Splash : Config
 
         @Serializable
+        data object Login : Config
+
+        @Serializable
         data class Details(val item: String) : Config
     }
 
@@ -107,7 +113,7 @@ internal class RootComponentImpl(
     ) : InstanceKeeper.Instance {
 
 
-        private val _sharedActions = MutableSharedFlow<Action>()
+        private val _sharedActions = MutableSharedFlow<Action>(replay = 1)
         private val coroutineScope = CoroutineScope(SupervisorJob()) //clear on destory
 
         val sharedActions = _sharedActions.asSharedFlow()
@@ -132,7 +138,7 @@ internal class RootComponentImpl(
         }
 
         private suspend fun onFailedSession() {
-            _sharedActions.emit(Action.NewRootScreen(Config.List))
+            _sharedActions.emit(Action.NewRootScreen(Config.Login))
         }
 
         private suspend fun onJwtSession() {

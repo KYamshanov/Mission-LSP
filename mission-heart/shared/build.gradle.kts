@@ -29,6 +29,7 @@ kotlin {
             implementation(libs.ktor.client.auth)
             implementation(libs.ktor.serialization.json)
             implementation(libs.napier)//logging engine
+            implementation(libs.koin.core)//DI framework
         }
 
         androidMain.dependencies {

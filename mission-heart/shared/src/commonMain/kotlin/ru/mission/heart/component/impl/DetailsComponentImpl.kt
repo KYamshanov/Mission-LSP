@@ -1,4 +1,4 @@
-package ru.mission.heart.impl
+package ru.mission.heart.component.impl
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue

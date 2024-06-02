@@ -15,5 +15,6 @@ interface RootComponent {
         class ListChild(val component: ListComponent) : Child()
         class DetailsChild(val component: DetailsComponent) : Child()
         class SplashChild(val component: SplashComponent) : Child()
+        class LoginChild(val component: LoginComponent) : Child()
     }
 }

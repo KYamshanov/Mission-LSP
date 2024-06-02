@@ -1,31 +1,20 @@
 package ru.mission.heart.component.factory
 
 import com.arkivanov.decompose.ComponentContext
+import kotlinx.coroutines.Dispatchers
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import ru.mission.heart.component.RootComponent
-import ru.mission.heart.api.MissionAuthApiImpl
-import ru.mission.heart.impl.RootComponentImpl
-import ru.mission.heart.network.NetworkConfig
-import ru.mission.heart.network.RequestFactoryImpl
-import ru.mission.heart.preferences
-import ru.mission.heart.session.JwtSessionInteractor
+import ru.mission.heart.component.impl.RootComponentImpl
 
 /**
  * Factory for instantiate RootComponent
  */
-class RootComponentFactory {
+class RootComponentFactory : KoinComponent{
 
     operator fun invoke(componentContext: ComponentContext): RootComponent {
-        var sessionInteractor: JwtSessionInteractor? = null
-
-        sessionInteractor = JwtSessionInteractor(
-            accessTokenKey = "",
-            refreshTokenKey = "",
-            preferences = preferences(),
-            missionAuthApi = MissionAuthApiImpl(RequestFactoryImpl(NetworkConfig(""), lazy { sessionInteractor!! }))
-        )
-
         return RootComponentImpl(
-            componentContext, sessionInteractor
+            componentContext, get(), Dispatchers.Main,get()
         )
     }
 }

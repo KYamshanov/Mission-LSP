@@ -2,10 +2,8 @@ package ru.mission.heart.component
 
 import com.arkivanov.decompose.value.Value
 
-interface DetailsComponent {
+interface SplashComponent {
     val model: Value<Model>
-
-    fun finish()
 
     data class Model(
         val title: String,

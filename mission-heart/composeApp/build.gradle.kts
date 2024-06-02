@@ -40,6 +40,7 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
 
             implementation(libs.napier)
+            implementation(libs.koin.core)
         }
 
         androidMain.dependencies {
