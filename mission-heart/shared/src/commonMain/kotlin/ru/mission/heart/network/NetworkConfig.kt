@@ -6,6 +6,6 @@ internal sealed interface NetworkConfig {
 }
 
 internal class LocalNetworkConfig : NetworkConfig {
-    override val requestUrl: String = "https://127.0.0.1:3456"
-    override val authorizationUrl: String = "https://127.0.0.1:6543"
+    override val requestUrl: String = "http://192.168.43.29:3456"
+    override val authorizationUrl: String = "http://192.168.43.29:6543"
 }

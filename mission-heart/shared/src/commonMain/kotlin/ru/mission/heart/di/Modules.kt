@@ -22,8 +22,8 @@ internal val commonModule = module {
     single<RequestFactory> { RequestFactoryImpl(get(), lazy { get() }) }
     single<SessionInteractor>(createdAtStart = true) {
         JwtSessionInteractor(
-            accessTokenKey = "",
-            refreshTokenKey = "",
+            accessTokenKey = "access_token",
+            refreshTokenKey = "refresh_token",
             preferences = get(),
             missionAuthApi = get()
         )
