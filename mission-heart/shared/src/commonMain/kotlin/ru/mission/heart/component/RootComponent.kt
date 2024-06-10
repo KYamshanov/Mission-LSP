@@ -12,8 +12,8 @@ interface RootComponent {
 
     // Defines all possible child components
     sealed class Child {
-        class ListChild(val component: ListComponent) : Child()
-        class DetailsChild(val component: DetailsComponent) : Child()
+        class MainChild(val component: MainComponent) : Child()
+        class LoginErrorChild(val component: LoginErrorComponent) : Child()
         class SplashChild(val component: SplashComponent) : Child()
         class LoginChild(val component: LoginComponent) : Child()
     }

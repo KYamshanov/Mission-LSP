@@ -16,8 +16,8 @@ fun RootContent(component: RootComponent, modifier: Modifier = Modifier) {
         animation = stackAnimation(fade()),
     ) {
         when (val child = it.instance) {
-            is ListChild -> ListContent(component = child.component)
-            is DetailsChild -> DetailsContent(component = child.component)
+            is MainChild -> MainContent(component = child.component)
+            is LoginErrorChild -> LoginErrorContent(component = child.component)
             is SplashChild -> SplashContent(component = child.component)
             is LoginChild -> LoginContent(component = child.component)
         }

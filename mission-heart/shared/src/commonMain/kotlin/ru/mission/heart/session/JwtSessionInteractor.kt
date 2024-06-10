@@ -63,7 +63,7 @@ internal class JwtSessionInteractor(
         exchangeState: String,
         requiredExchangeState: String
     ): Session {
-        check(exchangeState != requiredExchangeState) { "State is not matched" }
+        check(exchangeState == requiredExchangeState) { "State is not matched" }
 
         val token = missionAuthApi.token(authorizationCode, codeVerifier)
         val session = JwtSession(token.accessToken, token.refreshToken)

@@ -13,16 +13,17 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
 import ru.mission.heart.component.*
-import ru.mission.heart.component.RootComponent.Child.DetailsChild
-import ru.mission.heart.component.RootComponent.Child.ListChild
+import ru.mission.heart.component.RootComponent.Child.LoginErrorChild
+import ru.mission.heart.component.RootComponent.Child.MainChild
 import ru.mission.heart.component.factory.LoginComponentFactory
 import ru.mission.heart.session.*
 import ru.mission.heart.session.SessionInteractor
+import kotlin.coroutines.CoroutineContext
 
 internal class RootComponentImpl(
     componentContext: ComponentContext,
     sessionInteractor: SessionInteractor,
-    mainDispatcher: CoroutineDispatcher,
+    mainDispatcher: CoroutineContext,
     private val loginComponentFactory: LoginComponentFactory
 ) : RootComponent, ComponentContext by componentContext {
 
@@ -55,25 +56,20 @@ internal class RootComponentImpl(
 
     private fun child(config: Config, componentContext: ComponentContext): RootComponent.Child =
         when (config) {
-            is Config.List -> ListChild(listComponent(componentContext))
-            is Config.Details -> DetailsChild(detailsComponent(componentContext, config))
+            is Config.Main -> MainChild(mainComponent(componentContext))
+            is Config.LoginError -> LoginErrorChild(detailsComponent(componentContext, config))
             is Config.Splash -> RootComponent.Child.SplashChild(splashComponent(componentContext, config))
             is Config.Login -> RootComponent.Child.LoginChild(loginComponent(componentContext, config))
         }
 
-    private fun listComponent(componentContext: ComponentContext): ListComponent =
-        DefaultListComponent(
+    private fun mainComponent(componentContext: ComponentContext): MainComponent =
+        MainComponentImpl(
             componentContext = componentContext,
-            onItemSelected = { item: String -> // Supply dependencies and callbacks
-                navigation.push(Config.Details(item = item)) // Push the details component
-            },
         )
 
-    private fun detailsComponent(componentContext: ComponentContext, config: Config.Details): DetailsComponent =
-        DetailsComponentImpl(
+    private fun detailsComponent(componentContext: ComponentContext, config: Config.LoginError): LoginErrorComponent =
+        LoginErrorComponentImpl(
             componentContext = componentContext,
-            title = config.item, // Supply arguments from the configuration
-            onFinished = navigation::pop, // Pop the details component
         )
 
     private fun splashComponent(componentContext: ComponentContext, config: Config.Splash): SplashComponent =
@@ -86,7 +82,7 @@ internal class RootComponentImpl(
         loginComponentFactory.create(
             componentContext = componentContext,
             onSussessSingIn = {
-                navigation.replaceAll(Config.List)
+                navigation.replaceAll(Config.Main)
             },
             onFailedSingIn = {
 
@@ -102,7 +98,7 @@ internal class RootComponentImpl(
     private sealed interface Config {
 
         @Serializable
-        data object List : Config
+        data object Main : Config
 
         @Serializable
         data object Splash : Config
@@ -111,7 +107,7 @@ internal class RootComponentImpl(
         data object Login : Config
 
         @Serializable
-        data class Details(val item: String) : Config
+        data object LoginError : Config
     }
 
     private class RetainedAppInitializer(
@@ -148,7 +144,7 @@ internal class RootComponentImpl(
         }
 
         private suspend fun onJwtSession() {
-            _sharedActions.emit(Action.NewRootScreen(Config.List))
+            _sharedActions.emit(Action.NewRootScreen(Config.Main))
         }
 
         sealed interface Action {

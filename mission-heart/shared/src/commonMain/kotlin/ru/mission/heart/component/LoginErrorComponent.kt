@@ -3,12 +3,10 @@ package ru.mission.heart.component
 import com.arkivanov.decompose.value.Value
 
 /**
- * This is component
+ * Component of login error screen
  */
-interface DetailsComponent {
+interface LoginErrorComponent {
     val model: Value<Model>
-
-    fun finish()
 
     data class Model(
         val title: String,
