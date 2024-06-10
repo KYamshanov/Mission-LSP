@@ -47,7 +47,7 @@ internal class RootComponentImpl(
         coroutineScope.launch {
             retainedAppInitializer.sharedActions.collect {
                 when (it) {
-                    is RetainedAppInitializer.Action.NewRootScreen -> navigation.pushToFront(it.screenConfig)
+                    is RetainedAppInitializer.Action.NewRootScreen -> navigation.replaceAll(it.screenConfig)
                 }
             }
         }
@@ -84,7 +84,13 @@ internal class RootComponentImpl(
 
     private fun loginComponent(componentContext: ComponentContext, config: Config.Login): LoginComponent =
         loginComponentFactory.create(
-            componentContext = componentContext
+            componentContext = componentContext,
+            onSussessSingIn = {
+                navigation.replaceAll(Config.List)
+            },
+            onFailedSingIn = {
+
+            }
         )
 
 

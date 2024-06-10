@@ -1,4 +1,4 @@
-package ru.mission.heart.api
+package ru.mission.heart
 
 internal interface Generator {
 

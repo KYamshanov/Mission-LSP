@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.mission.heart.api.MissionAuthApi
-import ru.mission.heart.storage.Preferences
+import ru.mission.heart.Preferences
 
 internal class JwtSessionInteractor(
     private val accessTokenKey: String,
@@ -54,6 +54,20 @@ internal class JwtSessionInteractor(
             } catch (e: Exception) {
                 Failed(e)
             }
+        return session
+    }
+
+    override suspend fun auhtorize(
+        authorizationCode: String,
+        codeVerifier: String,
+        exchangeState: String,
+        requiredExchangeState: String
+    ): Session {
+        check(exchangeState != requiredExchangeState) { "State is not matched" }
+
+        val token = missionAuthApi.token(authorizationCode, codeVerifier)
+        val session = JwtSession(token.accessToken, token.refreshToken)
+        _state.update { session }
         return session
     }
 

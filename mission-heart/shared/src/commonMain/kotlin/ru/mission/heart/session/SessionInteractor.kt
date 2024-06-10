@@ -6,4 +6,12 @@ internal interface SessionInteractor {
     val state: StateFlow<Session>
 
     suspend fun refresh(): Session
+
+    @Throws(IllegalStateException::class)
+    suspend fun auhtorize(
+        authorizationCode: String,
+        codeVerifier: String,
+        exchangeState: String,
+        requiredExchangeState: String,
+    ): Session
 }

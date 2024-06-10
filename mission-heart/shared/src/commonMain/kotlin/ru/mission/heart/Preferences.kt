@@ -1,4 +1,4 @@
-package ru.mission.heart.storage
+package ru.mission.heart
 
 internal interface Preferences {
 

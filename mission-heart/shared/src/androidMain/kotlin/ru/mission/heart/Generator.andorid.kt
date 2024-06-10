@@ -4,7 +4,6 @@ import android.util.Base64
 import io.ktor.utils.io.core.toByteArray
 import java.security.MessageDigest
 import java.security.SecureRandom
-import ru.mission.heart.api.Generator
 
 internal class AndroidGeneratorImpl : Generator {
     override fun generateCodeVerifier(): String {

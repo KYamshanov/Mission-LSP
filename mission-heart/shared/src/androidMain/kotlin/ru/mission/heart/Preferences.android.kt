@@ -2,7 +2,7 @@ package ru.mission.heart
 
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
-import ru.mission.heart.storage.Preferences
+import ru.mission.heart.Preferences
 
 
 internal class AndroidPreferencesImpl constructor(

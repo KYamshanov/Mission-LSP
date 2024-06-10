@@ -1,6 +1,7 @@
 package ru.mission.heart
 
 
+import android.annotation.SuppressLint
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -17,14 +18,13 @@ import kotlinx.coroutines.runBlocking
 import ru.mission.heart.theme.MissionTheme
 import ru.mission.heart.component.LoginComponent
 
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
 actual fun LoginContent(component: LoginComponent, modifier: Modifier) {
-    Box(modifier = Modifier.fillMaxSize().background(color = MissionTheme.colors.background)) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(color = MissionTheme.colors.background)) {
         val contentState by component.model.subscribeAsState()
-        
-     /*   val codeVerifier = loginScreenRootComponent.authenticationInteractor.getCodeVerifier()
-        val requestState = loginScreenRootComponent.authenticationInteractor.getCodeVerifier()
-*/
         val mUrl = contentState.authorizationUrl
 
         // Adding a WebView inside AndroidView
@@ -39,15 +39,14 @@ actual fun LoginContent(component: LoginComponent, modifier: Modifier) {
                     )
                     webViewClient = object : WebViewClient() {
 
+                        @Suppress("OVERRIDE_DEPRECATION")
                         override fun shouldOverrideUrlLoading(
                             view: WebView,
                             url: String?,
                         ): Boolean {
-                            if (url != null && url.startsWith("http://127.0.0.1:8080/desktop/authorized?code=")) {
-                                runBlocking {
-                                    component.onAuthorized(url)
-                                }
-                                return true
+                            if (url != null && url.contains("/desktop/authorized?code=")) {
+                                component.onAuthorized(url)
+                                return true // do not redirect
                             }
                             return false
                         }

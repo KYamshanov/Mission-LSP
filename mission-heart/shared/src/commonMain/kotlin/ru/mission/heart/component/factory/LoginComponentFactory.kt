@@ -5,5 +5,9 @@ import ru.mission.heart.component.LoginComponent
 
 internal interface LoginComponentFactory {
 
-    fun create(componentContext: ComponentContext): LoginComponent
+    fun create(
+        componentContext: ComponentContext,
+        onSussessSingIn: () -> Unit,
+        onFailedSingIn: () -> Unit,
+    ): LoginComponent
 }

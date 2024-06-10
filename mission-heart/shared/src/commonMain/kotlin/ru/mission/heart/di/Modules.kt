@@ -1,6 +1,8 @@
 package ru.mission.heart.di
 
+import kotlinx.coroutines.Dispatchers
 import org.koin.core.module.Module
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.mission.heart.api.MissionAuthApi
 import ru.mission.heart.api.MissionAuthApiImpl
@@ -10,6 +12,7 @@ import ru.mission.heart.network.RequestFactory
 import ru.mission.heart.network.RequestFactoryImpl
 import ru.mission.heart.session.JwtSessionInteractor
 import ru.mission.heart.session.SessionInteractor
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Factory method to build Koin Module
@@ -18,6 +21,10 @@ import ru.mission.heart.session.SessionInteractor
 internal expect fun platformModule(): Module
 
 internal val commonModule = module {
+    single<CoroutineContext>(named("main")) { Dispatchers.Main }
+    single<CoroutineContext>(named("io")) { Dispatchers.IO }
+    single<CoroutineContext>(named("default")) { Dispatchers.Default }
+
     single<NetworkConfig> { LocalNetworkConfig() }
     single<RequestFactory> { RequestFactoryImpl(get(), lazy { get() }) }
     single<SessionInteractor>(createdAtStart = true) {
