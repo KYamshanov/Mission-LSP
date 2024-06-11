@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.kotlinParcelize)
 }
 
 kotlin {
@@ -19,33 +18,16 @@ kotlin {
     }
 
     sourceSets {
-
         commonMain.dependencies {
+            //decompose
             implementation(libs.decompose)
-            implementation(libs.essenty.lifecycle.coroutines)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.ktor.core)
-            implementation(libs.ktor.client.negotiation)
-            implementation(libs.ktor.client.logging)
-            implementation(libs.ktor.client.auth)
-            implementation(libs.ktor.serialization.json)
-            implementation(libs.napier)//logging engine
-            implementation(libs.koin.core)//DI framework
-        }
-
-        androidMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
-        }
-
-        jvmMain.dependencies {
-            implementation(libs.ktor.client.cio)
         }
     }
 }
 
 android {
-    namespace = "ru.mission.heart"
+    namespace = "ru.mission.time"
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11

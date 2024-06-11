@@ -1,4 +1,4 @@
-package ru.mission.heart
+package ru.mission.time
 
 import android.content.ComponentName
 import android.content.Context
@@ -12,25 +12,27 @@ import androidx.lifecycle.lifecycleScope
 import com.arkivanov.decompose.defaultComponentContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ru.mission.heart.component.factory.RootComponentFactory
-import ru.mission.heart.services.AuthorizationService
-import ru.mission.heart.services.AuthorizationServiceAgreement.REQUEST_ACCESS_TOKEN
+import ru.mission.point.DefaultRootComponent
+
 
 class MainActivity : ComponentActivity() {
+
+    val REQUEST_ACCESS_TOKEN = 1
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //base configuration
         val root =
-            RootComponentFactory().invoke(
+            DefaultRootComponent(
                 componentContext = defaultComponentContext(),
             )
 
         setContent {
             App(root)
         }
+        
+        println("Start")
 
         lifecycleScope.launch {
             delay(1000L)
@@ -44,8 +46,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     private var mService: Messenger? = null
+
 
     private val connection = object : ServiceConnection {
 
@@ -62,10 +64,6 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         // Bind to LocalService.
-     /*   Intent(this, AuthorizationService::class.java).also { intent ->
-            bindService(intent, connection, Context.BIND_AUTO_CREATE)
-        }*/
-
         Intent().also { intent ->
             intent.setComponent(ComponentName("ru.mission.heart","ru.mission.heart.services.AuthorizationService"))
             println(bindService(intent, connection, Context.BIND_AUTO_CREATE))

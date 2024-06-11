@@ -8,11 +8,6 @@ androidx-activityCompose = "1.9.0"
 compose-plugin = "1.6.10"
 decompose = "3.0.0"
 kotlinx-serialization = "1.7.0-RC"
-ktor = "2.3.7"
-kotlinx-coroutines = "1.8.1"
-napier = "2.7.1"
-koin = "3.5.6"
-essenty = "2.1.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -21,18 +16,6 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
 decompose-compose = { module = "com.arkivanov.decompose:extensions-compose", version.ref = "decompose" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
-ktor-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
-ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
-ktor-client-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
-ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
-ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
-napier = { module = "io.github.aakira:napier", version.ref = "napier" }
-koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
-essenty-lifecycle-coroutines = { module = "com.arkivanov.essenty:lifecycle-coroutines", version.ref = "essenty" }
-kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
