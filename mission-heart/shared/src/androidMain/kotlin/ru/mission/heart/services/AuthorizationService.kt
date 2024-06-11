@@ -40,11 +40,7 @@ class AuthorizationService : Service(), KoinComponent {
                         obj = Bundle().apply { putString("token", "Some token") }
                     )
                 } else {
-                    //  throw IllegalStateException("Not authorized")
-                    rT.response(
-                        AuthorizationServiceAgreement.GET_ACCESS_TOKEN_SUCCESS,
-                        obj = Bundle().apply { putString("token", "Some token") }
-                    )
+                    throw IllegalStateException("Not authorized")
                 }
             } catch (e: Exception) {
                 Log.wtf("AuthorizationService", e)

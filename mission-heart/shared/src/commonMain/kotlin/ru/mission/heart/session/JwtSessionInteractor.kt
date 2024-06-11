@@ -12,7 +12,6 @@ import ru.mission.heart.api.MissionAuthApi
 import ru.mission.heart.Preferences
 
 internal class JwtSessionInteractor(
-    private val accessTokenKey: String,
     private val refreshTokenKey: String,
     private val preferences: Preferences,
     private val missionAuthApi: MissionAuthApi,
@@ -45,6 +44,7 @@ internal class JwtSessionInteractor(
         val session =
             try {
                 val tokensModel = missionAuthApi.refresh(refreshToken)
+                preferences.saveValue(refreshTokenKey, tokensModel.refreshToken)
                 JwtSession(
                     accessToken = tokensModel.accessToken,
                     refreshToken = tokensModel.refreshToken,
@@ -54,6 +54,7 @@ internal class JwtSessionInteractor(
             } catch (e: Exception) {
                 Failed(e)
             }
+        _state.update { session }
         return session
     }
 
@@ -66,6 +67,7 @@ internal class JwtSessionInteractor(
         check(exchangeState == requiredExchangeState) { "State is not matched" }
 
         val token = missionAuthApi.token(authorizationCode, codeVerifier)
+        preferences.saveValue(refreshTokenKey, token.refreshToken)
         val session = JwtSession(token.accessToken, token.refreshToken)
         _state.update { session }
         return session
