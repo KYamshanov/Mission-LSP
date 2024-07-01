@@ -1,0 +1,1 @@
+Application provides instrument for learn foreign words by external dictionary (e.g. yandex dictionary)
