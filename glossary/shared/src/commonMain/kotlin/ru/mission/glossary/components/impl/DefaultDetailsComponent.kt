@@ -1,8 +1,9 @@
-package ru.mission.glossary
+package ru.mission.glossary.components.impl
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
+import ru.mission.glossary.components.DetailsComponent
 
 class DefaultDetailsComponent(
     componentContext: ComponentContext,

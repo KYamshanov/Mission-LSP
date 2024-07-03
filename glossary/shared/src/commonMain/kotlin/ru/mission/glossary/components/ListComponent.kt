@@ -1,4 +1,4 @@
-package ru.mission.glossary
+package ru.mission.glossary.components
 
 import com.arkivanov.decompose.value.Value
 

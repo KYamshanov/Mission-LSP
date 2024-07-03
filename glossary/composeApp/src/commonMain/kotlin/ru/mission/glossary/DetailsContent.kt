@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import ru.mission.glossary.DetailsComponent
+import ru.mission.glossary.components.DetailsComponent
 
 @Composable
 fun DetailsContent(component: DetailsComponent, modifier: Modifier = Modifier) {

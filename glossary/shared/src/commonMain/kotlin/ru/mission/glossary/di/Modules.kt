@@ -5,7 +5,7 @@ import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.mission.glossary.SingleAppParser
-import ru.mission.glossary.factory.RootComponentFactory
+import ru.mission.glossary.components.factory.RootComponentFactory
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -19,5 +19,11 @@ internal val commonModule = module {
     single<CoroutineContext>(named("io")) { Dispatchers.IO }
     single<CoroutineContext>(named("default")) { Dispatchers.Default }
 
-    factory { RootComponentFactory(get()) }
+    factory {
+        RootComponentFactory(
+            singleAppParser = get(),
+            mainContext = get(named("main")),
+            defaultContext = get(named("default"))
+        )
+    }
 }
