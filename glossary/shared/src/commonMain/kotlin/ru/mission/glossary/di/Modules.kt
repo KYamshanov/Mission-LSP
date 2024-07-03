@@ -4,8 +4,10 @@ import kotlinx.coroutines.Dispatchers
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import ru.mission.glossary.SingleAppParser
+import ru.mission.glossary.Dictionary
 import ru.mission.glossary.components.factory.RootComponentFactory
+import ru.mission.glossary.components.factory.RootComponentFactoryImpl
+import ru.mission.glossary.data.SqDictionary
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -19,11 +21,14 @@ internal val commonModule = module {
     single<CoroutineContext>(named("io")) { Dispatchers.IO }
     single<CoroutineContext>(named("default")) { Dispatchers.Default }
 
-    factory {
-        RootComponentFactory(
+    factory<RootComponentFactory> {
+        RootComponentFactoryImpl(
             singleAppParser = get(),
             mainContext = get(named("main")),
-            defaultContext = get(named("default"))
+            defaultContext = get(named("default")),
+            dictionary = get()
         )
     }
+
+    factory<Dictionary> { SqDictionary(get(), get(named("io"))) }
 }

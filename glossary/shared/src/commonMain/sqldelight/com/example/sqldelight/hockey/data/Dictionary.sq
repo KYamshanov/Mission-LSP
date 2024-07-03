@@ -1,0 +1,49 @@
+CREATE TABLE collection (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    name TEXT NOT NULL
+);
+
+CREATE TABLE collectionWords (
+   collectionId INTEGER NOT NULL,
+   wordId INTEGER NOT NULL,
+   FOREIGN KEY(collectionId) REFERENCES collection(id),
+   FOREIGN KEY(wordId) REFERENCES dictionary(id)
+);
+
+CREATE TABLE dictionary (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    word TEXT NOT NULL,
+    translate TEXT NOT NULL
+);
+
+
+selectAllCollections:
+SELECT *
+FROM collection;
+
+selectCollectionDictonary:
+SELECT *
+FROM collectionWords
+INNER JOIN dictionary
+ON collectionWords.wordId == dictionary.id
+WHERE collectionId = ?;
+
+selectCollectionById:
+SELECT *
+FROM collection
+WHERE id = ?;
+
+insertCollection:
+INSERT INTO collection (name)
+VALUES (?);
+
+insertDictionary:
+INSERT INTO dictionary (word,translate)
+VALUES (?,?);
+
+insertCollectionWords:
+INSERT INTO collectionWords (collectionId,wordId)
+VALUES (?,?);
+
+lastInsertRowId:
+SELECT last_insert_rowid();

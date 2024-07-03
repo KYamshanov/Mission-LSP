@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
@@ -25,6 +26,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines)
             implementation(libs.lifecycle.coroutines)
             implementation(libs.koin.core)//DI framework
+            implementation(libs.sqldelight.coroutines)
         }
 
         androidMain.dependencies {
@@ -49,5 +51,13 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
+    }
+}
+
+sqldelight {
+    databases {
+        create("Database") {
+            packageName.set("ru.mission.glossary")
+        }
     }
 }

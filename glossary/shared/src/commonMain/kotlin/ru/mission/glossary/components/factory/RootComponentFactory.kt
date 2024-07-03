@@ -1,21 +1,29 @@
 package ru.mission.glossary.components.factory
 
 import com.arkivanov.decompose.ComponentContext
+import ru.mission.glossary.Dictionary
 import ru.mission.glossary.components.impl.DefaultRootComponent
 import ru.mission.glossary.SingleAppParser
 import ru.mission.glossary.components.RootComponent
 import kotlin.coroutines.CoroutineContext
 
-class RootComponentFactory(
+interface RootComponentFactory {
+
+    fun create(componentContext: ComponentContext): RootComponent
+}
+
+internal class RootComponentFactoryImpl(
     private val singleAppParser: SingleAppParser,
     private val mainContext: CoroutineContext,
     private val defaultContext: CoroutineContext,
-) {
+    private val dictionary: Dictionary,
+) : RootComponentFactory {
 
-    fun create(componentContext: ComponentContext): RootComponent = DefaultRootComponent(
+    override fun create(componentContext: ComponentContext): RootComponent = DefaultRootComponent(
         componentContext = componentContext,
         singleAppParser = singleAppParser,
         mainContext = mainContext,
-        defaultContext = defaultContext
+        defaultContext = defaultContext,
+        dictionary = dictionary,
     )
 }

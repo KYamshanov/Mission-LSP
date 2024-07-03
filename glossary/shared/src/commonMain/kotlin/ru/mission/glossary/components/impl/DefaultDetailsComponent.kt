@@ -5,7 +5,7 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import ru.mission.glossary.components.DetailsComponent
 
-class DefaultDetailsComponent(
+internal class DefaultDetailsComponent(
     componentContext: ComponentContext,
     title: String,
     private val onFinished: () -> Unit,

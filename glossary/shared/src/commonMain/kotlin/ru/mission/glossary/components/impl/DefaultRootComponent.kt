@@ -4,20 +4,19 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.*
 import com.arkivanov.decompose.value.Value
 import kotlinx.serialization.Serializable
-import ru.mission.glossary.components.DetailsComponent
-import ru.mission.glossary.components.ListComponent
-import ru.mission.glossary.components.RootComponent
+import ru.mission.glossary.Dictionary
 import ru.mission.glossary.components.RootComponent.Child.DetailsChild
 import ru.mission.glossary.components.RootComponent.Child.ListChild
 import ru.mission.glossary.SingleAppParser
-import ru.mission.glossary.components.LoadDictionaryComponent
+import ru.mission.glossary.components.*
 import kotlin.coroutines.CoroutineContext
 
-class DefaultRootComponent(
+internal class DefaultRootComponent(
     componentContext: ComponentContext,
     private val singleAppParser: SingleAppParser,
     private val mainContext: CoroutineContext,
     private val defaultContext: CoroutineContext,
+    private val dictionary: Dictionary,
 ) : RootComponent, ComponentContext by componentContext {
 
     private val navigation = StackNavigation<Config>()
@@ -26,7 +25,7 @@ class DefaultRootComponent(
         childStack(
             source = navigation,
             serializer = Config.serializer(),
-            initialConfiguration = Config.LoadDictionary(), // The initial child component is List
+            initialConfiguration = Config.Collections, // The initial child component is List
             handleBackButton = true, // Automatically pop from the stack on back button presses
             childFactory = ::child,
         )
@@ -40,6 +39,13 @@ class DefaultRootComponent(
                     loadDictionaryComponent(componentContext, config)
                 )
             }
+
+            is Config.Collections -> RootComponent.Child.CollectionsChild(
+                collectionsComponent(
+                    componentContext,
+                    config
+                )
+            )
         }
 
     private fun listComponent(componentContext: ComponentContext, config: Config.List): ListComponent =
@@ -49,9 +55,8 @@ class DefaultRootComponent(
                 navigation.push(Config.Details(item = item)) // Push the details component
             },
             mainContext = mainContext,
-            defaultContext = defaultContext,
-            singleAppParser = singleAppParser,
-            url = config.url,
+            dictionary = dictionary,
+            collectionId = config.collectionId,
         )
 
     private fun detailsComponent(componentContext: ComponentContext, config: Config.Details): DetailsComponent =
@@ -68,7 +73,23 @@ class DefaultRootComponent(
         LoadDictionaryComponentImpl(
             componentContext = componentContext,
             initialUrl = config.initialUrl,
-            onLoadDictionary = { navigation.replaceCurrent(DefaultRootComponent.Config.List(it)) }
+            onLoadDictionary = { navigation.replaceCurrent(DefaultRootComponent.Config.List(it)) },
+            dictionary = dictionary,
+            mainContext = mainContext,
+            defaultContext = defaultContext,
+            singleAppParser = singleAppParser
+        )
+
+    private fun collectionsComponent(
+        componentContext: ComponentContext,
+        config: Config.Collections,
+    ): CollectionsComponent =
+        CollectionsComponentImpl(
+            componentContext = componentContext,
+            mainContext = mainContext,
+            dictionary = dictionary,
+            loadCollection = { navigation.push(Config.LoadDictionary()) },
+            openCollection = { navigation.push(Config.List(it)) }
         )
 
     override fun onBackClicked(toIndex: Int) {
@@ -78,14 +99,16 @@ class DefaultRootComponent(
     @Serializable // kotlinx-serialization plugin must be applied
     private sealed interface Config {
         @Serializable
-        data class List(val url: String) : Config
+        data class List(val collectionId: Long) : Config
 
         @Serializable
         data class Details(val item: String) : Config
 
-
         @Serializable
         data class LoadDictionary(val initialUrl: String = "") : Config
+
+        @Serializable
+        data object Collections : Config
     }
 }
 

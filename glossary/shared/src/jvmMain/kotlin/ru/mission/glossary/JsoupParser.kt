@@ -14,7 +14,7 @@ import ru.mission.glossary.models.WordsDictionary
 import java.util.*
 
 
-class JsoupParser : SingleAppParser {
+internal class JsoupParser : SingleAppParser {
 
 
     override suspend fun parse(url: String): DictionaryGetResult {
@@ -36,14 +36,14 @@ class JsoupParser : SingleAppParser {
                 if (responseUrl.contains("/props/api/collections")) {
                     val responseBodyText = devTools.send(Network.getResponseBody(requestId)).body
                     val responseModel = Json.decodeFromString<TranslateCollectionRoot>(responseBodyText)
-                    println(responseModel.translateCollection?.authorName)
 
+                    val name = responseModel.translateCollection?.name
                     val words = responseModel.translateCollection?.records?.mapNotNull {
                         if (it.text != null && it.translation != null)
                             WordTranslate(it.text, it.translation) else
                             null
                     }
-                    wordsDictionaryFlow.update { words?.let { WordsDictionary(it) } }
+                    wordsDictionaryFlow.update { words?.let { WordsDictionary(name ?: "Collection", it) } }
                 }
             }
 

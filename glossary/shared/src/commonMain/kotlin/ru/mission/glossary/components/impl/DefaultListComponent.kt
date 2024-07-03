@@ -5,19 +5,18 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
-import kotlinx.coroutines.*
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import ru.mission.glossary.Dictionary
 import ru.mission.glossary.components.ListComponent
-import ru.mission.glossary.SingleAppParser
-import ru.mission.glossary.models.DictionaryGetResult
 import kotlin.coroutines.CoroutineContext
 
-class DefaultListComponent(
+internal class DefaultListComponent(
     componentContext: ComponentContext,
     mainContext: CoroutineContext,
-    defaultContext: CoroutineContext,
     private val onItemSelected: (String) -> Unit,
-    private val singleAppParser: SingleAppParser,
-    private val url: String,
+    private val collectionId: Long,
+    private val dictionary: Dictionary,
 ) : ListComponent, ComponentContext by componentContext {
 
     private val _model = MutableValue(ListComponent.Model(listOf("Hello wolrd!", "Hi!")))
@@ -26,21 +25,13 @@ class DefaultListComponent(
 
     override fun onItemClicked(item: String) = onItemSelected(item)
 
-    val scope = coroutineScope(mainContext + SupervisorJob())
+    private val scope = coroutineScope(mainContext + SupervisorJob())
 
     init {
         scope.launch {
-            val result = withContext(defaultContext) {
-                singleAppParser.parse(url)
-            }
-            when (result) {
-                is DictionaryGetResult.Failure -> TODO()
-                is DictionaryGetResult.Success -> {
-                    val dictionary = result.dictionary
-                    _model.update {
-                        ListComponent.Model(dictionary.words.map { "${it.word} - ${it.translate}" })
-                    }
-                }
+            val dictionary = dictionary.getWords(collectionId)
+            _model.update {
+                ListComponent.Model(dictionary.map { "${it.word} - ${it.translate}" })
             }
         }
     }

@@ -1,6 +1,6 @@
 package ru.mission.glossary.models
 
-sealed interface DictionaryGetResult {
+internal sealed interface DictionaryGetResult {
 
     data class Success(val dictionary: WordsDictionary) : DictionaryGetResult
 

@@ -1,7 +1,10 @@
 package ru.mission.glossary.di
 
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import ru.mission.glossary.Database
 import ru.mission.glossary.JsoupParser
 import ru.mission.glossary.SingleAppParser
 
@@ -11,4 +14,7 @@ import ru.mission.glossary.SingleAppParser
  */
 internal actual fun platformModule(): Module = module {
     factory<SingleAppParser> { JsoupParser() }
+
+    single<SqlDriver> { JdbcSqliteDriver("jdbc:sqlite:database.db", schema = Database.Schema)}
+    single<Database> { Database(get()) }
 }
