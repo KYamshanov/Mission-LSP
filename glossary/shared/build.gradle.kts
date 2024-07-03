@@ -22,6 +22,15 @@ kotlin {
             //decompose
             implementation(libs.decompose)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.coroutines)
+            implementation(libs.lifecycle.coroutines)
+            implementation(libs.koin.core)//DI framework
+        }
+
+        jvmMain.dependencies {
+
+            implementation(libs.jsoup) // for processing html
+            implementation(libs.selenium.java) // for execute single page app
         }
     }
 }

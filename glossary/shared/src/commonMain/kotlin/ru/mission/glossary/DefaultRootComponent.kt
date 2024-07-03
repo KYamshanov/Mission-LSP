@@ -14,6 +14,7 @@ import ru.mission.glossary.RootComponent.Child.ListChild
 
 class DefaultRootComponent(
     componentContext: ComponentContext,
+    private val singleAppParser: SingleAppParser,
 ) : RootComponent, ComponentContext by componentContext {
 
     private val navigation = StackNavigation<Config>()
@@ -39,6 +40,7 @@ class DefaultRootComponent(
             onItemSelected = { item: String -> // Supply dependencies and callbacks
                 navigation.push(Config.Details(item = item)) // Push the details component
             },
+            singleAppParser
         )
 
     private fun detailsComponent(componentContext: ComponentContext, config: Config.Details): DetailsComponent =

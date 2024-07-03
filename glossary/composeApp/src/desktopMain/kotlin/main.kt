@@ -4,18 +4,23 @@ import androidx.compose.ui.window.rememberWindowState
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import org.koin.core.Koin
+import org.koin.core.KoinApplication
+import org.koin.core.context.GlobalContext
 import ru.mission.glossary.App
 import ru.mission.glossary.DefaultRootComponent
+import ru.mission.glossary.di.initKoin
+import ru.mission.glossary.factory.RootComponentFactory
 
 fun main() {
+    initKoin { }
     val lifecycle = LifecycleRegistry()
 
     // Always create the root component outside Compose on the UI thread
     val root =
         runOnUiThread {
-            DefaultRootComponent(
-                componentContext = DefaultComponentContext(lifecycle = lifecycle),
-            )
+            val componentContext = DefaultComponentContext(lifecycle = lifecycle)
+            GlobalContext.get().get<RootComponentFactory>().create(componentContext)
         }
 
     application {
