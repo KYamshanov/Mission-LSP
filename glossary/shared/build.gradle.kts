@@ -27,10 +27,15 @@ kotlin {
             implementation(libs.koin.core)//DI framework
         }
 
+        androidMain.dependencies {
+            implementation(libs.sqldelight.android)
+        }
+
         jvmMain.dependencies {
 
             implementation(libs.jsoup) // for processing html
             implementation(libs.selenium.java) // for execute single page app
+            implementation(libs.sqldelight.jvm)
         }
     }
 }
