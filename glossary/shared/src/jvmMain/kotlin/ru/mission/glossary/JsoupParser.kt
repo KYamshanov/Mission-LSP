@@ -21,7 +21,7 @@ internal class JsoupParser : SingleAppParser {
         var driver: EdgeDriver? = null
         var devTools: DevTools? = null
         try {
-            var wordsDictionaryFlow = MutableStateFlow<WordsDictionary?>(null)
+            val wordsDictionaryFlow = MutableStateFlow<WordsDictionary?>(null)
             val options = EdgeOptions()
             options.addArguments("--headless");
             driver = EdgeDriver(options)

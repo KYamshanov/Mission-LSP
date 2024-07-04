@@ -55,7 +55,7 @@ kotlin {
 }
 
 android {
-    namespace = "ru.mission.time"
+    namespace = "ru.mission.glossary"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
@@ -63,7 +63,7 @@ android {
     sourceSets["main"].resources.srcDirs("src/commonMain/resources")
 
     defaultConfig {
-        applicationId = "ru.mission.time"
+        applicationId = "ru.mission.glossary"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -97,7 +97,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "ru.mission.time"
+            packageName = "ru.mission.glossary"
             packageVersion = "1.0.0"
         }
     }

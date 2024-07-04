@@ -1,87 +1,61 @@
 package ru.mission.glossary
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
-import android.os.*
-import android.widget.Toast
+import android.os.Bundle
+import android.view.ViewGroup
+import android.webkit.*
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.lifecycle.lifecycleScope
+import androidx.compose.ui.viewinterop.AndroidView
 import com.arkivanov.decompose.defaultComponentContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import ru.mission.point.DefaultRootComponent
+import org.koin.core.context.GlobalContext
+import ru.mission.glossary.components.factory.RootComponentFactory
+import java.net.URL
 
 
 class MainActivity : ComponentActivity() {
 
-    val REQUEST_ACCESS_TOKEN = 1
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val root =
-            DefaultRootComponent(
-                componentContext = defaultComponentContext(),
-            )
+        val root = GlobalContext.get().get<RootComponentFactory>().create(
+            componentContext = defaultComponentContext(),
+        )
 
         setContent {
-            App(root)
+
+
+            val mUrl = "https://translate.yandex.ru/subscribe?collection_id=6549257082cf737777c1706b&utm_source=new_collection_share_desktop"
+
+            println("XYI:TETS")
+
+            AndroidView(factory = {
+                WebView(it).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    webViewClient = object : WebViewClient(){
+
+                        override fun shouldInterceptRequest(
+                            view: WebView,
+                            request: WebResourceRequest
+                        ): WebResourceResponse? {
+                            val url = request.url
+                            if(url.toString().contains("/props/api/collections")){
+                                println("XYI 2" + request.url)
+                               // WebResourceResponse()
+                            }
+
+                            return super.shouldInterceptRequest(view, request)
+                        }
+                    }
+                    settings.javaScriptEnabled = true
+
+                    loadUrl(mUrl)
+                }
+            })
+
+           // App(root)
         }
-        
-        println("Start")
-
-        lifecycleScope.launch {
-            delay(1000L)
-            val msg: Message = Message.obtain(null, REQUEST_ACCESS_TOKEN, 0, 0)
-            msg.replyTo = messenger
-            try {
-                mService?.send(msg)
-            } catch (e: RemoteException) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    private var mService: Messenger? = null
-
-
-    private val connection = object : ServiceConnection {
-
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            println("onServiceConnected")
-            mService = Messenger(service)
-        }
-
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            println("onServiceDisconnected")
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        // Bind to LocalService.
-        Intent().also { intent ->
-            intent.setComponent(ComponentName("ru.mission.heart","ru.mission.heart.services.AuthorizationService"))
-            println(bindService(intent, connection, Context.BIND_AUTO_CREATE))
-            }
-    }
-
-    val messenger = Messenger(ResponseHandler())
-
-
-    private inner class ResponseHandler : Handler(Looper.getMainLooper()) {
-        override fun handleMessage(msg: Message) {
-            Toast.makeText(this@MainActivity, "message from service", Toast.LENGTH_SHORT).show();
-            println(msg.obj)
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        unbindService(connection)
     }
 }

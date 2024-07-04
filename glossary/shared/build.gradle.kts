@@ -43,7 +43,7 @@ kotlin {
 }
 
 android {
-    namespace = "ru.mission.time"
+    namespace = "ru.mission.glossary"
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
