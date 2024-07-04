@@ -25,12 +25,15 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines)
             implementation(libs.lifecycle.coroutines)
-            implementation(libs.koin.core)//DI framework
+            implementation(libs.koin.core) //DI framework
             implementation(libs.sqldelight.coroutines)
+            implementation(libs.ktor.client.core) //ktor. Network driver
         }
 
         androidMain.dependencies {
             implementation(libs.sqldelight.android)
+            implementation(libs.kotlinx.coroutines.android)
+            implementation(libs.ktor.client.okhttp)
         }
 
         jvmMain.dependencies {
@@ -38,6 +41,7 @@ kotlin {
             implementation(libs.jsoup) // for processing html
             implementation(libs.selenium.java) // for execute single page app
             implementation(libs.sqldelight.jvm)
+            implementation(libs.ktor.client.okhttp)
         }
     }
 }
