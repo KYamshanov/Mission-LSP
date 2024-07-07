@@ -1,7 +1,7 @@
 package ru.mission.glossary
 
+import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
@@ -10,10 +10,10 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.viewinterop.AndroidView
 import com.arkivanov.decompose.defaultComponentContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import org.koin.core.context.GlobalContext
 import ru.mission.glossary.components.factory.RootComponentFactory
 
@@ -28,12 +28,14 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
+            App(root)
+
             val mUrl =
                 "https://translate.yandex.ru/subscribe?collection_id=6549257082cf737777c1706b&utm_source=new_collection_share_desktop"
 
-            println("XYI:TETS")
-
-            AndroidView(factory = {
+            AndroidView(
+                modifier = Modifier.alpha(0f),
+                factory = {
                 WebView(it).apply {
                     layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
@@ -41,65 +43,37 @@ class MainActivity : ComponentActivity() {
                     )
 
 
-                    addJavascriptInterface(JavaScriptInterface(), "Android")
+                    addJavascriptInterface(JavaScriptInterface(this@MainActivity, this), "Android")
 
                     webViewClient = object : WebViewClient() {
 
-                        override fun onPageFinished(view: WebView?, url: String?) {
-                            super.onPageFinished(view, url)
-                            runOnUiThread {
-                                evaluateJavascript(
-                                    "(function() {" +
-                                        "var originalFetch = window.fetch;" +
-                                        "window.fetch = function(input, init) {" +
-                                        "return originalFetch.apply(this, arguments).then(function(response) {" +
-                                        "if (response) {" +
-                                        // You can customize this part to handle different response types
-                                        "response.json().then(function(json) {" +
-                                        "Android.onJsonResponse(JSON.stringify(json));" +
-                                        "});" +
-                                        "}" +
-                                        "return response;" +
-                                        "});" +
-                                        "};" +
-                                        "})();",
-                                    null
-                                );
-                            }
-                        }
+                        var v = true
 
                         override fun shouldInterceptRequest(
                             view: WebView,
                             request: WebResourceRequest,
                         ): WebResourceResponse? {
                             val url = request.url
-                            if (url.toString().contains("/props/api/collections")) {
-                                println("XYI 2" + request.url)
+                            if (v && url.toString().contains("/props/api/collections")) {
+                                v = false
                                 runOnUiThread {
-                                    evaluateJavascript(
-                                        "(function() {" +
-                                            "var originalFetch = window.fetch;" +
-                                            "window.fetch = function(input, init) {" +
-                                            "return originalFetch.apply(this, arguments).then(function(response) {" +
-                                            "if (response) {" +
-                                            // You can customize this part to handle different response types
-                                            "response.json().then(function(json) {" +
-                                            "Android.onJsonResponse(JSON.stringify(json));" +
-                                            "});" +
-                                            "}" +
-                                            "return response;" +
-                                            "});" +
-                                            "};" +
-                                            "})();",
-                                        null
-                                    );
+                                    view.loadUrl(url.toString())
                                 }
-                                return super.shouldInterceptRequest(view, request)
+                                return null
                             }
 
                             return super.shouldInterceptRequest(view, request)
                         }
+
+                        override fun onPageFinished(view: WebView, url: String) {
+                            if(url.contains("/props/api/collections")){
+                                view.loadUrl("javascript:window.Android.processContent(document.getElementsByTagName('body')[0].innerText);");
+                            }
+                            super.onPageFinished(view, url)
+                        }
                     }
+
+                    @SuppressLint("SetJavaScriptEnabled")
                     settings.javaScriptEnabled = true
 
                     loadUrl(mUrl)
@@ -111,12 +85,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-class JavaScriptInterface {
+class JavaScriptInterface(private val activity: MainActivity, private val webView: WebView) {
 
     @JavascriptInterface
-    fun onJsonResponse(jsonResponse: String) {
-        println("TEST")
-        // Handle the JSON response here
-        println("WebView" + "JSON Response: $jsonResponse")
+    fun processContent(aContent: String) {
+        println("TEXT:: $aContent")
     }
 }
