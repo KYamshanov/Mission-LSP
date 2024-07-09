@@ -14,10 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.viewinterop.AndroidView
 import com.arkivanov.decompose.defaultComponentContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import org.koin.core.context.GlobalContext
 import ru.mission.glossary.components.factory.RootComponentFactory
 
 class MainActivity : ComponentActivity() {
+
+    private val webViewKeeper = GlobalContext.get().get<WebViewKeeper>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,65 +34,74 @@ class MainActivity : ComponentActivity() {
 
             App(root)
 
-            val mUrl =
-                "https://translate.yandex.ru/subscribe?collection_id=6549257082cf737777c1706b&utm_source=new_collection_share_desktop"
-
             AndroidView(
                 modifier = Modifier.alpha(0f),
                 factory = {
-                WebView(it).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
+                    WebView(it).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+
+                        val onPageFinishedStateFlow = MutableStateFlow<WebViewKeeper.Page?>(null)
+                        addJavascriptInterface(
+                            JavaScriptInterface(onPageFinishedStateFlow),
+                            "Android"
+                        )
 
 
-                    addJavascriptInterface(JavaScriptInterface(this@MainActivity, this), "Android")
+                        webViewClient = object : WebViewClient() {
 
-                    webViewClient = object : WebViewClient() {
+                            var v = true
 
-                        var v = true
-
-                        override fun shouldInterceptRequest(
-                            view: WebView,
-                            request: WebResourceRequest,
-                        ): WebResourceResponse? {
-                            val url = request.url
-                            if (v && url.toString().contains("/props/api/collections")) {
-                                v = false
-                                runOnUiThread {
-                                    view.loadUrl(url.toString())
+                            override fun shouldInterceptRequest(
+                                view: WebView,
+                                request: WebResourceRequest,
+                            ): WebResourceResponse? {
+                                val url = request.url
+                                if (v && url.toString().contains("/props/api/collections")) {
+                                    v = false
+                                    runOnUiThread {
+                                        view.loadUrl(url.toString())
+                                    }
+                                    return null
                                 }
-                                return null
+
+                                return super.shouldInterceptRequest(view, request)
                             }
 
-                            return super.shouldInterceptRequest(view, request)
+                            override fun onPageFinished(view: WebView, url: String) {
+                                if (url.contains("/props/api/collections")) {
+                                    println("D")
+                                    view.loadUrl("javascript:window.Android.processContent(document.getElementsByTagName('body')[0].innerText);");
+                                }
+                                super.onPageFinished(view, url)
+                            }
                         }
 
-                        override fun onPageFinished(view: WebView, url: String) {
-                            if(url.contains("/props/api/collections")){
-                                view.loadUrl("javascript:window.Android.processContent(document.getElementsByTagName('body')[0].innerText);");
-                            }
-                            super.onPageFinished(view, url)
-                        }
+                        @SuppressLint("SetJavaScriptEnabled")
+                        settings.javaScriptEnabled = true
+                        webViewKeeper.setWebView(this, onPageFinishedStateFlow)
+
                     }
-
-                    @SuppressLint("SetJavaScriptEnabled")
-                    settings.javaScriptEnabled = true
-
-                    loadUrl(mUrl)
-                }
-            })
+                })
 
             // App(root)
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        webViewKeeper.clear()
+    }
 }
 
-class JavaScriptInterface(private val activity: MainActivity, private val webView: WebView) {
+class JavaScriptInterface(
+    val onPageFinishedStateFlow: MutableStateFlow<WebViewKeeper.Page?>,
+) {
 
     @JavascriptInterface
     fun processContent(aContent: String) {
-        println("TEXT:: $aContent")
+        onPageFinishedStateFlow.update { WebViewKeeper.Page("/props/api/collections", aContent) }
     }
 }

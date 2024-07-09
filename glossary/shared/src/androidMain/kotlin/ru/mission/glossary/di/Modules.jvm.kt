@@ -4,10 +4,9 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import io.ktor.client.HttpClient
 import org.koin.core.module.Module
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.mission.glossary.Database
-import ru.mission.glossary.RequestInterceptor
-import ru.mission.glossary.RequestInterceptorImpl
 import ru.mission.glossary.SingleAppParser
 import ru.mission.glossary.WebViewParser
 
@@ -16,10 +15,9 @@ import ru.mission.glossary.WebViewParser
  * for deplare platform dependencies
  */
 internal actual fun platformModule(): Module = module {
-    factory<SingleAppParser> { WebViewParser() }
+    factory<SingleAppParser> { WebViewParser(get(), get(named("main"))) }
 
     single<SqlDriver> { AndroidSqliteDriver(Database.Schema, get(), "database.db") }
     single<Database> { Database(get()) }
     single<HttpClient> { HttpClient() }
-    factory<RequestInterceptor> { RequestInterceptorImpl(get()) }
 }
