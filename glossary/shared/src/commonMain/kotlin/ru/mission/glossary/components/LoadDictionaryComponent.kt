@@ -8,6 +8,7 @@ interface LoadDictionaryComponent {
     fun onSetUrl(url: String)
 
     fun onClickLoadDictionary()
+    fun onBack()
 
     data class Model(
         val url: String,

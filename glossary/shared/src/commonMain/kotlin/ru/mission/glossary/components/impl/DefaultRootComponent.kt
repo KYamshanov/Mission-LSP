@@ -34,6 +34,7 @@ internal class DefaultRootComponent(
         when (config) {
             is Config.List -> ListChild(listComponent(componentContext, config))
             is Config.Details -> DetailsChild(detailsComponent(componentContext, config))
+
             is Config.LoadDictionary -> {
                 RootComponent.Child.LoadDictionaryChild(
                     loadDictionaryComponent(componentContext, config)
@@ -57,6 +58,7 @@ internal class DefaultRootComponent(
             mainContext = mainContext,
             dictionary = dictionary,
             collectionId = config.collectionId,
+            back = { navigation.pop() }
         )
 
     private fun detailsComponent(componentContext: ComponentContext, config: Config.Details): DetailsComponent =
@@ -77,7 +79,8 @@ internal class DefaultRootComponent(
             dictionary = dictionary,
             mainContext = mainContext,
             defaultContext = defaultContext,
-            singleAppParser = singleAppParser
+            singleAppParser = singleAppParser,
+            back = { navigation.pop() }
         )
 
     private fun collectionsComponent(
@@ -98,6 +101,7 @@ internal class DefaultRootComponent(
 
     @Serializable // kotlinx-serialization plugin must be applied
     private sealed interface Config {
+
         @Serializable
         data class List(val collectionId: Long) : Config
 

@@ -17,6 +17,7 @@ internal class DefaultListComponent(
     private val onItemSelected: (String) -> Unit,
     private val collectionId: Long,
     private val dictionary: Dictionary,
+    private val back: () -> Unit,
 ) : ListComponent, ComponentContext by componentContext {
 
     private val _model = MutableValue(ListComponent.Model(listOf("Hello wolrd!", "Hi!")))
@@ -24,6 +25,9 @@ internal class DefaultListComponent(
     override val model: Value<ListComponent.Model> = _model
 
     override fun onItemClicked(item: String) = onItemSelected(item)
+    override fun onBack() {
+        back()
+    }
 
     private val scope = coroutineScope(mainContext + SupervisorJob())
 

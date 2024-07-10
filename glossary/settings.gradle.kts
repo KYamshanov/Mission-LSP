@@ -30,3 +30,5 @@ dependencyResolutionManagement {
 
 include(":composeApp")
 include(":shared")
+include(":ui:compose:kit")
+include(":ui:compose:theme")

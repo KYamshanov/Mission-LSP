@@ -4,9 +4,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinParcelize)
 }
 
@@ -40,6 +40,9 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.koin.core)
+
+            implementation(projects.ui.compose.theme)
+            implementation(projects.ui.compose.kit)
         }
 
         androidMain.dependencies {

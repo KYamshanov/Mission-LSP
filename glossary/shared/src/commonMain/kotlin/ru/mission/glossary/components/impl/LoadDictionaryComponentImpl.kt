@@ -21,6 +21,7 @@ internal class LoadDictionaryComponentImpl(
     private val defaultContext: CoroutineContext,
     private val singleAppParser: SingleAppParser,
     private val onLoadDictionary: (Long) -> Unit,
+    private val back: () -> Unit,
     private val dictionary: Dictionary,
 ) : LoadDictionaryComponent, ComponentContext by componentContext {
 
@@ -43,6 +44,7 @@ internal class LoadDictionaryComponentImpl(
                 is DictionaryGetResult.Failure -> {
                     //TODO()
                 }
+
                 is DictionaryGetResult.Success -> {
                     val dictionary = result.dictionary
                     val collection =
@@ -51,5 +53,9 @@ internal class LoadDictionaryComponentImpl(
                 }
             }
         }
+    }
+
+    override fun onBack() {
+        back()
     }
 }
