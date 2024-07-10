@@ -40,7 +40,9 @@ internal class LoadDictionaryComponentImpl(
                 singleAppParser.parse(url)
             }
             when (result) {
-                is DictionaryGetResult.Failure -> TODO()
+                is DictionaryGetResult.Failure -> {
+                    //TODO()
+                }
                 is DictionaryGetResult.Success -> {
                     val dictionary = result.dictionary
                     val collection =

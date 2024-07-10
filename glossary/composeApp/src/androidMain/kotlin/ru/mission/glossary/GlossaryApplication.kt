@@ -14,7 +14,6 @@ class GlossaryApplication : Application() {
             modules(
                 module {
                     single<Context> { this@GlossaryApplication }
-                    single<WebViewKeeper> { WebViewKeeperWithLifecycle() }
                 }
             )
         }

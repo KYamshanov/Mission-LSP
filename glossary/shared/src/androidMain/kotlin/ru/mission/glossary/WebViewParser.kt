@@ -1,10 +1,8 @@
 package ru.mission.glossary
 
-import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import ru.mission.glossary.models.DictionaryGetResult
@@ -13,23 +11,16 @@ import ru.mission.glossary.models.WordTranslate
 import ru.mission.glossary.models.WordsDictionary
 
 internal class WebViewParser(
-    private val webViewKeeper: WebViewKeeper,
-    private val mainContext: CoroutineContext,
+    private val androidSpaViewModel: AndroidSpaViewModel,
+    private val webViewCallback: WebViewCallback,
 ) : SingleAppParser {
 
     override suspend fun parse(url: String): DictionaryGetResult {
-        val webView = webViewKeeper.webView
-        val onPageLoadedStateFlow = webViewKeeper.onPageLoadedStateFlow
-        if (webView == null || onPageLoadedStateFlow == null) {
-            return DictionaryGetResult.Failure(IllegalStateException("WebView not set"))
-        }
-        withContext(mainContext){
-            webView.loadUrl(url)
-        }
+        val sharedFlow = webViewCallback.sharedFlow
+        androidSpaViewModel.loadUrl(url)
         val page = withTimeout(15_000L) {
-            onPageLoadedStateFlow
-                .filterNotNull()
-                .filter { it.url.contains("/props/api/collections") }
+            sharedFlow
+                .filterIsInstance<WebViewCallback.CallbackModel.BodyReceived>()
                 .first()
         }
         val responseModel = Json.decodeFromString<TranslateCollectionRoot>(page.body)

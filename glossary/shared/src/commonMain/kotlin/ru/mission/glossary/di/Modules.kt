@@ -9,6 +9,7 @@ import ru.mission.glossary.components.factory.RootComponentFactory
 import ru.mission.glossary.components.factory.RootComponentFactoryImpl
 import ru.mission.glossary.data.SqDictionary
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.sin
 
 /**
  * Factory method to build Koin Module
