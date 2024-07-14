@@ -1,14 +1,14 @@
 package ru.mission.glossary.components
 
+import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.value.Value
 
 interface ListComponent {
-    val model: Value<Model>
+
+    val stack: Value<ChildStack<*, CardComponent>>
 
     fun onItemClicked(item: String)
-    fun onBack()
+    fun onCardSwiped(index: Int)
 
-    data class Model(
-        val items: List<String>,
-    )
+    fun onBack()
 }

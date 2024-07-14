@@ -40,6 +40,7 @@ fun DraggableCard(
     offsetY: Float,
     scale: Float,
     onSwiped: () -> Unit,
+    isDraggable: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     var cardPosition: Offset by remember { mutableStateOf(Offset.Zero) }
@@ -73,15 +74,12 @@ fun DraggableCard(
             Mode.IDLE,
             Mode.DOWN,
             -> Offset(x = 0F, y = offsetY)
-        }.also {
-            println("TEST 10 $it")
         },
         animationSpec = if (mode == Mode.DRAG) snap() else tween()
     )
 
     val animatedScale by animateFloatAsState(targetValue = scale, animationSpec = tween())
 
-    println("TEST3 $offsetY")
     DisposableEffect(animatedOffset, mode, offsetY) {
         if ((mode == Mode.UP) && (animatedOffset.y == maxOffsetY)) {
             onSwiped()
@@ -103,21 +101,23 @@ fun DraggableCard(
             .offset { animatedOffset.round() }
             .aspectRatio(ratio = 1.5882353F)
             .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = { position ->
-                        startTouchPosition = position
-                        dragTotalOffset = Offset.Zero
-                        mode = Mode.DRAG
-                    },
-                    onDragEnd = {
-                        mode = if (dragLastOffset.getDistance() > dragDistanceThreshold) Mode.UP else Mode.DOWN
-                    },
-                    onDrag = { change, dragAmount ->
-                        change.consume()
-                        dragTotalOffset += dragAmount
-                        dragLastOffset = dragAmount
-                    },
-                )
+                if(isDraggable){
+                    detectDragGestures(
+                        onDragStart = { position ->
+                            startTouchPosition = position
+                            dragTotalOffset = Offset.Zero
+                            mode = Mode.DRAG
+                        },
+                        onDragEnd = {
+                            mode = if (dragLastOffset.getDistance() > dragDistanceThreshold) Mode.UP else Mode.DOWN
+                        },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            dragTotalOffset += dragAmount
+                            dragLastOffset = dragAmount
+                        },
+                    )
+                }
             }
             .scale(animatedScale)
             .graphicsLayer {
