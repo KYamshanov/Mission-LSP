@@ -16,6 +16,16 @@ CREATE TABLE dictionary (
     translate TEXT NOT NULL
 );
 
+CREATE TABLE testing (
+   wordId INTEGER NOT NULL UNIQUE ,
+   checkCount INTEGER NOT NULL,
+   successCount INTEGER NOT NULL,
+   lastCheckDate INTEGER NOT NULL,
+   FOREIGN KEY(wordId) REFERENCES dictionary(id)
+);
+
+lastInsertRowId:
+SELECT last_insert_rowid();
 
 selectAllCollections:
 SELECT *
@@ -45,5 +55,25 @@ insertCollectionWords:
 INSERT INTO collectionWords (collectionId,wordId)
 VALUES (?,?);
 
-lastInsertRowId:
-SELECT last_insert_rowid();
+selectCollectionDictonaryWithTesting:
+SELECT *
+FROM collectionWords
+INNER JOIN dictionary
+ON collectionWords.wordId == dictionary.id
+LEFT JOIN testing
+ON testing.wordId == dictionary.id
+WHERE collectionId = ?;
+
+selectTesting:
+SELECT *
+FROM testing
+WHERE wordId = ?;
+
+updateTesting:
+UPDATE testing
+SET checkCount = ?, successCount= ?, lastCheckDate= ?
+WHERE wordId = ?;
+
+insertTesting:
+INSERT INTO testing (wordId, checkCount,successCount, lastCheckDate)
+VALUES (?,?,?,?);

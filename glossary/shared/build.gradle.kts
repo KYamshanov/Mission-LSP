@@ -24,6 +24,7 @@ kotlin {
             implementation(libs.decompose)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines)
+            implementation(libs.kotlinx.datetime)
             implementation(libs.lifecycle.coroutines)
             implementation(libs.koin.core) //DI framework
             implementation(libs.sqldelight.coroutines)

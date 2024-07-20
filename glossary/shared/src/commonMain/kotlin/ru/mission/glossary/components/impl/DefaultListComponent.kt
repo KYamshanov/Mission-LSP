@@ -5,35 +5,31 @@ import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.navigate
-import com.arkivanov.decompose.router.stack.push
-import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.mission.glossary.Dictionary
 import ru.mission.glossary.components.ListComponent
 import kotlin.coroutines.CoroutineContext
 import kotlinx.serialization.Serializable
 import ru.mission.glossary.components.CardComponent
-import ru.mission.glossary.models.ColorRGBA
-import ru.mission.glossary.models.RandomColor
-import ru.mission.glossary.models.WordTranslate
-import ru.mission.glossary.setFirstItem
+import ru.mission.glossary.models.*
 import ru.mission.glossary.setLastItem
 import kotlin.random.Random
 
 internal class DefaultListComponent(
     componentContext: ComponentContext,
-    mainContext: CoroutineContext,
+    private val mainContext: CoroutineContext,
+    private val defaultContext: CoroutineContext,
     private val onItemSelected: (String) -> Unit,
     private val collectionId: Long,
     private val dictionary: Dictionary,
     private val back: () -> Unit,
 ) : ListComponent, ComponentContext by componentContext {
 
-    private var words = listOf(WordTranslate("WORK", "xyi"))
+    private var words: List<Pair<WordTranslate, TestingModel?>> = emptyList()
 
     private val navigation = StackNavigation<CardConfig>()
 
@@ -56,10 +52,11 @@ internal class DefaultListComponent(
     override val stack: Value<ChildStack<*, CardComponent>> = _stack
 
     override fun onItemClicked(item: String) = onItemSelected(item)
-    override fun onCardSwiped(index: Int) {
+    override fun onCardSwiped(index: Int, isSuccess: Boolean) {
         navigation.navigate { stack ->
-            val newWordConfig = words[random.nextInt(words.size)].toConfig()
             val oldCardConfig = stack[index]
+            val newWordConfig = getRandomWord().toConfig()
+            updateStatistic(oldCardConfig.title, isSuccess)
             listOf(newWordConfig) + (stack - oldCardConfig).setLastItem { it.copy(isDraggable = true) }
         }
     }
@@ -70,16 +67,15 @@ internal class DefaultListComponent(
 
     private val scope = coroutineScope(mainContext + SupervisorJob())
 
-    private val random = Random(2)
 
     init {
         scope.launch {
-            val dictionary = dictionary.getWords(collectionId)
+            val dictionary = dictionary.getWordsWithTesting(collectionId)
             words = dictionary
             navigation.navigate {
                 val initialCardConfigs = mutableListOf<CardConfig>()
                 for (i in 0 until 3) {
-                    val word = dictionary[random.nextInt(dictionary.size)]
+                    val word = getRandomWord()
                     initialCardConfigs.add(word.toConfig())
                 }
                 initialCardConfigs.setLastItem { it.copy(isDraggable = true) }
@@ -104,6 +100,37 @@ internal class DefaultListComponent(
         val isDraggable: Boolean = false,
         val color: ColorRGBA = RandomColor(),
     )
+
+    private fun getRandomWord(): WordTranslate {
+        val random = Random(2)
+        val mode = random.nextInt(3)
+        when (mode) {
+            0 -> {
+                // random of bed known words
+                val words = words.sortedBy { it.second?.let { m -> m.successCount.toDouble() / m.checkCount.toDouble() } ?: 0.0 }
+            }
+        }
+    }
+
+    private fun updateStatistic(word: String, isSuccess: Boolean) {
+        scope.launch(defaultContext) {
+            val wordTranslateIndex = words.indexOfFirst { it.first.word == word }.takeIf { it != -1 } ?: return@launch
+            val wordTranslateTestingModelPair = words[wordTranslateIndex]
+            val updatedTestingModel = wordTranslateTestingModelPair.second?.let {
+                it.copy(
+                    checkCount = it.checkCount + 1,
+                    successCount = it.successCount + if (isSuccess) 1 else 0
+                )
+            }
+                ?: firstTestingModel(wordTranslateTestingModelPair.first.wordId, isSuccess)
+            dictionary.saveTesting(updatedTestingModel)
+            withContext(mainContext) {
+                val newList = words.toMutableList()
+                newList[wordTranslateIndex] = wordTranslateTestingModelPair.copy(second = updatedTestingModel)
+                words = newList
+            }
+        }
+    }
 
     companion object {
 

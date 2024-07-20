@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredWidthIn
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -42,8 +43,9 @@ fun DraggableCard(
     offsetY: Float,
     scale: Float,
     onSwiped: () -> Unit,
+    dragDistanceThreshold: Float,
     isDraggable: Boolean = true,
-    onCardSwipeState: (CardSwipeState) -> Unit,
+    onDrag: (Offset) -> Unit,
     content: @Composable () -> Unit,
 ) {
     var cardPosition: Offset by remember { mutableStateOf(Offset.Zero) }
@@ -54,9 +56,8 @@ fun DraggableCard(
 
     var mode by remember { mutableStateOf(Mode.IDLE) }
     var startTouchPosition: Offset by remember { mutableStateOf(Offset.Zero) }
-    var dragTotalOffset = remember { mutableStateOf<Offset>(Offset.Zero) }
+    val dragTotalOffset = remember { mutableStateOf<Offset>(Offset.Zero) }
     var dragLastOffset: Offset by remember { mutableStateOf(Offset.Zero) }
-    val dragDistanceThreshold = 200.dp.toPx()
 
     val animatedOffset by animateOffsetAsState(
         targetValue = when (mode) {
@@ -114,23 +115,13 @@ fun DraggableCard(
                         onDragEnd = {
                             mode =
                                 if (dragTotalOffset.value.getDistance() > dragDistanceThreshold) Mode.UP else Mode.DOWN
+                            onDrag(Offset.Zero)
                         },
                         onDrag = { change, dragAmount ->
                             change.consume()
                             dragTotalOffset.value += dragAmount
                             dragLastOffset = dragAmount
-
-                            println("$rememberCardSwipeState")
-                            if (dragTotalOffset.value.getDistance() > dragDistanceThreshold) {
-                                if(rememberCardSwipeState !is CardSwipeState.Up){
-                                    val state = CardSwipeState.Up(dragTotalOffset)
-                                    onCardSwipeState(state)
-                                    rememberCardSwipeState = state
-                                }
-                            } else {
-                                onCardSwipeState(CardSwipeState.Down)
-                                rememberCardSwipeState = CardSwipeState.Down
-                            }
+                            onDrag(dragTotalOffset.value)
                         },
                     )
                 }
@@ -151,7 +142,8 @@ fun DraggableCard(
                     if (maxOffsetY - offsetY == 0f) 0f else (animatedOffset.y - offsetY) / (maxOffsetY - offsetY)
                 val horizontalFactor = transformOrigin.pivotFractionX * 2F - 1F
                 rotationZ = verticalFactor * horizontalFactor * -30F
-            }
+            },
+        contentAlignment = Alignment.Center
     ) {
         content()
     }

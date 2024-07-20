@@ -1,6 +1,7 @@
 package ru.mission.glossary
 
 import ru.mission.glossary.models.Collection
+import ru.mission.glossary.models.TestingModel
 import ru.mission.glossary.models.WordTranslate
 
 internal interface Dictionary {
@@ -15,4 +16,8 @@ internal interface Dictionary {
     suspend fun getWords(collectionId: Long): List<WordTranslate>
 
     suspend fun saveCollection(withName: String, words: List<WordTranslate>): Collection
+
+    suspend fun getWordsWithTesting(collectionId: Long): List<Pair<WordTranslate, TestingModel?>>
+
+    suspend fun saveTesting(testingModel: TestingModel): TestingModel
 }

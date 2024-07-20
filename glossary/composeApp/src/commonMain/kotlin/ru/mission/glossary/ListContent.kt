@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.IntSize
@@ -35,6 +36,8 @@ import ru.mission.glossary.theme.MissionTheme
 import ru.mission.glossary.uikit.components.CardSwipeState
 import ru.mission.glossary.uikit.components.DraggableCard
 import ru.mission.glossary.uikit.utils.toPx
+import kotlin.math.abs
+import kotlin.math.min
 
 @Composable
 fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
@@ -47,7 +50,7 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
         Item(it.configuration, it.instance, MutableTransitionState(initialState = true))
     }
 
-    var cardSwipeState by remember { mutableStateOf<CardSwipeState>(CardSwipeState.Down) }
+    var dragTotalOffset by remember { mutableStateOf<Offset>(Offset.Zero) }
 
     DisposableEffect(items) {
         lastItems = lastItems.diff(items)
@@ -58,23 +61,22 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize().onPlaced { layoutSize = it.size },
         contentAlignment = Alignment.Center,
     ) {
+        val dragDistanceThreshold = min(200.dp.toPx(), layoutSize.width / 3f)
+        val feedbackBufferThreshold = dragDistanceThreshold / 4
 
-        Box(
-            modifier = modifier.fillMaxSize().onPlaced { layoutSize = it.size }
-                .run {
-                    val state = cardSwipeState
-                    when (state) {
-                        is CardSwipeState.Down -> this
-                        is CardSwipeState.Up -> {
-                            (if (state.offsetState.value.x > 0) background(Color.Green.copy(alpha = state.offsetState.value.x / 500)) else background(
-                                Color.Red.copy(alpha = state.offsetState.value.x / 500)
-                            ))
-                        }
-                    }
-                },
-            contentAlignment = Alignment.Center,
-        ) {}
-
+        if (layoutSize.width > 0) {
+            Box(
+                modifier = modifier.fillMaxSize()
+                    .run {
+                        val color = if (dragTotalOffset.x > 0) Color.Green else Color.Red
+                        val alpha =
+                            ((dragTotalOffset.getDistance() - feedbackBufferThreshold) / (dragDistanceThreshold))
+                                .coerceIn(0f, 1f)
+                        background(color.copy(alpha = alpha))
+                    },
+                contentAlignment = Alignment.Center,
+            ) {}
+        }
         lastItems.forEachIndexed { index, (configuration, instance, transitionState) ->
             key(instance) {
                 val indexFromEnd = lastItems.lastIndex - index
@@ -83,11 +85,11 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
                     layoutSize = layoutSize,
                     offsetY = indexFromEnd * -16.dp.toPx(),
                     scale = 1F - indexFromEnd.toFloat() / 20F,
+                    dragDistanceThreshold = dragDistanceThreshold,
                     isDraggable = instance.model.value.isDraggable,
                     onSwiped = { component.onCardSwiped(index) },
-                    onCardSwipeState = {
-                        println("TEST ${it}")
-                        cardSwipeState = it
+                    onDrag = {
+                        dragTotalOffset = it
                     }
                 ) {
                     androidx.compose.animation.AnimatedVisibility(
@@ -107,7 +109,7 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
 
                         Column(
                             modifier = modifier
-                                .defaultMinSize(minWidth = 160.dp, minHeight = 220.dp)
+                                .defaultMinSize(minWidth = 256.dp, minHeight = 220.dp)
                                 .shadow(elevation = 4.dp, shape = RoundedCornerShape(size = 16.dp), clip = true)
                                 .background(
                                     Color(

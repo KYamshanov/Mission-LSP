@@ -8,7 +8,7 @@ interface ListComponent {
     val stack: Value<ChildStack<*, CardComponent>>
 
     fun onItemClicked(item: String)
-    fun onCardSwiped(index: Int)
+    fun onCardSwiped(index: Int, isSuccess: Boolean)
 
     fun onBack()
 }
