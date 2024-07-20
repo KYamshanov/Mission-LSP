@@ -10,12 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredWidthIn
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -34,6 +29,13 @@ import ru.mission.glossary.uikit.utils.toPx
  * copied from https://github.com/arkivanov/Decompose/blob/master/sample/shared/compose/src/commonMain/kotlin/com/arkivanov/sample/shared/cards/CardsContent.kt
  */
 
+sealed class CardSwipeState {
+
+    data object Down : CardSwipeState()
+
+    data class Up(val offsetState: State<Offset>) : CardSwipeState()
+}
+
 @Composable
 fun DraggableCard(
     layoutSize: IntSize,
@@ -41,6 +43,7 @@ fun DraggableCard(
     scale: Float,
     onSwiped: () -> Unit,
     isDraggable: Boolean = true,
+    onCardSwipeState: (CardSwipeState) -> Unit,
     content: @Composable () -> Unit,
 ) {
     var cardPosition: Offset by remember { mutableStateOf(Offset.Zero) }
@@ -51,29 +54,27 @@ fun DraggableCard(
 
     var mode by remember { mutableStateOf(Mode.IDLE) }
     var startTouchPosition: Offset by remember { mutableStateOf(Offset.Zero) }
-    var dragTotalOffset: Offset by remember { mutableStateOf(Offset.Zero) }
+    var dragTotalOffset = remember { mutableStateOf<Offset>(Offset.Zero) }
     var dragLastOffset: Offset by remember { mutableStateOf(Offset.Zero) }
-    val dragDistanceThreshold = 3.dp.toPx()
+    val dragDistanceThreshold = 200.dp.toPx()
 
     val animatedOffset by animateOffsetAsState(
         targetValue = when (mode) {
             Mode.DRAG -> {
-                println("TEST2 $dragTotalOffset  ${Offset(x = 0F, y = offsetY)}")
-                dragTotalOffset + Offset(x = 0F, y = offsetY)
+                dragTotalOffset.value + Offset(x = 0F, y = offsetY)
             }
 
             Mode.UP -> {
-                val (x1, y1) = dragTotalOffset
+                val (x1, y1) = dragTotalOffset.value
                 val x2 = x1 + dragLastOffset.x
                 val y2 = y1 + dragLastOffset.y
-                println("TEST: $y2")
                 val upperOffsetX = ((maxOffsetY - y1) * (x2 - x1) / (y2 - y1) + x1).coerceIn(minOffsetX, maxOffsetX)
-                Offset(x = upperOffsetX, y = maxOffsetY)
+                Offset(x = dragTotalOffset.value.x * 3, y = dragTotalOffset.value.y * 1.1f)
             }
 
             Mode.IDLE,
             Mode.DOWN,
-            -> Offset(x = 0F, y = offsetY)
+                -> Offset(x = 0F, y = offsetY)
         },
         animationSpec = if (mode == Mode.DRAG) snap() else tween()
     )
@@ -81,7 +82,7 @@ fun DraggableCard(
     val animatedScale by animateFloatAsState(targetValue = scale, animationSpec = tween())
 
     DisposableEffect(animatedOffset, mode, offsetY) {
-        if ((mode == Mode.UP) && (animatedOffset.y == maxOffsetY)) {
+        if ((mode == Mode.UP) && (animatedOffset.y == dragTotalOffset.value.y * 1.1f)) {
             onSwiped()
             mode = Mode.DOWN
         } else if ((mode == Mode.DOWN) && (animatedOffset.y == offsetY)) {
@@ -90,6 +91,8 @@ fun DraggableCard(
 
         onDispose {}
     }
+
+    var rememberCardSwipeState by remember { mutableStateOf<CardSwipeState>(CardSwipeState.Down) }
 
     Box(
         modifier = Modifier
@@ -101,20 +104,33 @@ fun DraggableCard(
             .offset { animatedOffset.round() }
             .aspectRatio(ratio = 1.5882353F)
             .pointerInput(Unit) {
-                if(isDraggable){
+                if (isDraggable) {
                     detectDragGestures(
                         onDragStart = { position ->
                             startTouchPosition = position
-                            dragTotalOffset = Offset.Zero
+                            dragTotalOffset.value = Offset.Zero
                             mode = Mode.DRAG
                         },
                         onDragEnd = {
-                            mode = if (dragLastOffset.getDistance() > dragDistanceThreshold) Mode.UP else Mode.DOWN
+                            mode =
+                                if (dragTotalOffset.value.getDistance() > dragDistanceThreshold) Mode.UP else Mode.DOWN
                         },
                         onDrag = { change, dragAmount ->
                             change.consume()
-                            dragTotalOffset += dragAmount
+                            dragTotalOffset.value += dragAmount
                             dragLastOffset = dragAmount
+
+                            println("$rememberCardSwipeState")
+                            if (dragTotalOffset.value.getDistance() > dragDistanceThreshold) {
+                                if(rememberCardSwipeState !is CardSwipeState.Up){
+                                    val state = CardSwipeState.Up(dragTotalOffset)
+                                    onCardSwipeState(state)
+                                    rememberCardSwipeState = state
+                                }
+                            } else {
+                                onCardSwipeState(CardSwipeState.Down)
+                                rememberCardSwipeState = CardSwipeState.Down
+                            }
                         },
                     )
                 }
@@ -142,8 +158,19 @@ fun DraggableCard(
 }
 
 private enum class Mode {
+    /**
+     * initial state
+     */
     IDLE,
+
+    /**
+     * When card is moving
+     */
     DRAG,
+
+    /**
+     * means cars is ready to swipe
+     */
     UP,
     DOWN
 }

@@ -38,7 +38,15 @@ internal class LoadDictionaryComponentImpl(
         scope.launch {
             val url = _model.value.url
             val result = withContext(defaultContext) {
-                singleAppParser.parse(url)
+                val securityUrl = when {
+                    !url.startsWith("https") && url.startsWith("http") -> {
+                        url.replace("http", "https")
+                    }
+
+                    !url.startsWith("https") -> "https://$url"
+                    else -> url
+                }
+                singleAppParser.parse(securityUrl)
             }
             when (result) {
                 is DictionaryGetResult.Failure -> {

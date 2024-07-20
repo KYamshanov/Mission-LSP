@@ -17,7 +17,12 @@ import ru.mission.glossary.components.ListComponent
 import kotlin.coroutines.CoroutineContext
 import kotlinx.serialization.Serializable
 import ru.mission.glossary.components.CardComponent
+import ru.mission.glossary.models.ColorRGBA
+import ru.mission.glossary.models.RandomColor
 import ru.mission.glossary.models.WordTranslate
+import ru.mission.glossary.setFirstItem
+import ru.mission.glossary.setLastItem
+import kotlin.random.Random
 
 internal class DefaultListComponent(
     componentContext: ComponentContext,
@@ -30,14 +35,20 @@ internal class DefaultListComponent(
 
     private var words = listOf(WordTranslate("WORK", "xyi"))
 
-    private val navigation = StackNavigation<Config>()
+    private val navigation = StackNavigation<CardConfig>()
 
-    private val _stack: Value<ChildStack<Config, CardComponent>> =
+    private val _stack: Value<ChildStack<CardConfig, CardComponent>> =
         childStack(
             source = navigation,
-            serializer = Config.serializer(),
+            serializer = CardConfig.serializer(),
             initialStack = {
-                words.map { it.toConfig() }
+                listOf(
+                    CardConfig(
+                        title = "Loading...",
+                        subtitle = "Загрузка...",
+                        isDraggable = false,
+                    )
+                )
             },
             childFactory = ::card,
         )
@@ -47,14 +58,9 @@ internal class DefaultListComponent(
     override fun onItemClicked(item: String) = onItemSelected(item)
     override fun onCardSwiped(index: Int) {
         navigation.navigate { stack ->
-            wordOffset++
-            /*listOf(stack[index]) + words.subList(words.lastIndex - 3 - wordOffset, words.lastIndex - wordOffset)
-                .map { it.toConfig() }
-            */
-
-            val config = stack[index]
-            listOf(config) + (stack - config)
-           // listOf(stack[index]) + (stack - stack[index])  //+ words[words.lastIndex - wordOffset].toConfig()
+            val newWordConfig = words[random.nextInt(words.size)].toConfig()
+            val oldCardConfig = stack[index]
+            listOf(newWordConfig) + (stack - oldCardConfig).setLastItem { it.copy(isDraggable = true) }
         }
     }
 
@@ -63,40 +69,46 @@ internal class DefaultListComponent(
     }
 
     private val scope = coroutineScope(mainContext + SupervisorJob())
-    private var wordOffset = 0
+
+    private val random = Random(2)
 
     init {
         scope.launch {
             val dictionary = dictionary.getWords(collectionId)
             words = dictionary
-            /*navigation.navigate {
-                dictionary.takeLast(3)
-                    .map { it.toConfig() }
-            }*/
-            dictionary.takeLast(3)
-                .forEach {
-                    navigation.push(it.toConfig())
+            navigation.navigate {
+                val initialCardConfigs = mutableListOf<CardConfig>()
+                for (i in 0 until 3) {
+                    val word = dictionary[random.nextInt(dictionary.size)]
+                    initialCardConfigs.add(word.toConfig())
                 }
+                initialCardConfigs.setLastItem { it.copy(isDraggable = true) }
+            }
         }
     }
 
-    private fun card(config: Config, componentContext: ComponentContext): CardComponent =
+    private fun card(config: CardConfig, componentContext: ComponentContext): CardComponent =
         CardComponentImpl(
             componentContext = componentContext,
             title = config.title,
             subtitle = config.subtitle,
+            isDraggable = config.isDraggable,
+            color = config.color
         )
 
+
     @Serializable
-    private data class Config(
+    private data class CardConfig(
         val title: String,
         val subtitle: String,
+        val isDraggable: Boolean = false,
+        val color: ColorRGBA = RandomColor(),
     )
 
     companion object {
 
-        private fun WordTranslate.toConfig(): Config =
-            Config(
+        private fun WordTranslate.toConfig(): CardConfig =
+            CardConfig(
                 title = word, subtitle = translate
             )
     }
