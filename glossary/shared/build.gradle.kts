@@ -29,6 +29,7 @@ kotlin {
             implementation(libs.koin.core) //DI framework
             implementation(libs.sqldelight.coroutines)
             implementation(libs.ktor.client.core) //ktor. Network driver
+
         }
 
         androidMain.dependencies {

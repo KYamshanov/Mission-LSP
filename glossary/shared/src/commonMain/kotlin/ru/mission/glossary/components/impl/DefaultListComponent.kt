@@ -101,16 +101,6 @@ internal class DefaultListComponent(
         val color: ColorRGBA = RandomColor(),
     )
 
-    private fun getRandomWord(): WordTranslate {
-        val random = Random(2)
-        val mode = random.nextInt(3)
-        when (mode) {
-            0 -> {
-                // random of bed known words
-                val words = words.sortedBy { it.second?.let { m -> m.successCount.toDouble() / m.checkCount.toDouble() } ?: 0.0 }
-            }
-        }
-    }
 
     private fun updateStatistic(word: String, isSuccess: Boolean) {
         scope.launch(defaultContext) {
