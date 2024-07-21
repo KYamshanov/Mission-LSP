@@ -11,6 +11,7 @@ interface CardComponent {
     fun clickOnSubtitle()
 
     data class Model(
+        val id: Long,
         val title: String,
         val subtitle: String = "",
         val isDraggable: Boolean,

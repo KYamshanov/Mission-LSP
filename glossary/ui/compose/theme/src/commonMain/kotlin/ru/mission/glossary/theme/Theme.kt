@@ -21,6 +21,10 @@ object MissionTheme {
     val shapes: MissionShapes
         @Composable
         get() = LocalExtendedShape.current
+
+    val palette: Palette
+        @Composable
+        get() = LocalExtendedPalette.current
 }
 
 expect fun providedValueConfig(): List<ProvidedValue<*>>
@@ -33,6 +37,7 @@ fun MissionTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composabl
     CompositionLocalProvider(
         LocalExtendedColors provides colors,
         LocalExtendedShape provides Shapes,
+        LocalExtendedPalette provides SkyPalette,
         LocalTextSelectionColors provides MissionTextSelectionColors,
         LocalMinimumInteractiveComponentEnforcement provides false,
         *providedValueConfig().toTypedArray()

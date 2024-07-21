@@ -6,6 +6,7 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.navigate
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -13,12 +14,13 @@ import kotlinx.coroutines.withContext
 import ru.mission.glossary.Dictionary
 import ru.mission.glossary.components.ListComponent
 import kotlin.coroutines.CoroutineContext
-import kotlinx.serialization.Serializable
 import ru.mission.glossary.components.CardComponent
 import ru.mission.glossary.getRandomWord
 import ru.mission.glossary.models.*
 import ru.mission.glossary.setLastItem
 import kotlin.random.Random
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
 
 internal class DefaultListComponent(
     componentContext: ComponentContext,
@@ -34,6 +36,15 @@ internal class DefaultListComponent(
 
     private val navigation = StackNavigation<CardConfig>()
 
+    private var id: Long = stateKeeper.consume(key = "counter", strategy = serializer()) ?: 0L
+        set(value) {
+            field = if (value > 5_000_000) 0 else value
+        }
+
+    init {
+        stateKeeper.register(key = "SAVED_STATE", strategy = serializer()) { id }
+    }
+
     private val _stack: Value<ChildStack<CardConfig, CardComponent>> =
         childStack(
             source = navigation,
@@ -41,6 +52,7 @@ internal class DefaultListComponent(
             initialStack = {
                 listOf(
                     CardConfig(
+                        id = id++,
                         title = "Loading...",
                         subtitle = "Загрузка...",
                         isDraggable = false,
@@ -56,7 +68,7 @@ internal class DefaultListComponent(
     override fun onCardSwiped(index: Int, isSuccess: Boolean) {
         navigation.navigate { stack ->
             val oldCardConfig = stack[index]
-            val newWordConfig = getRandomWord(words).toConfig()
+            val newWordConfig = getRandomWord(words).toConfig(id++)
             updateStatistic(oldCardConfig.title, isSuccess)
             listOf(newWordConfig) + (stack - oldCardConfig).setLastItem { it.copy(isDraggable = true) }
         }
@@ -78,7 +90,7 @@ internal class DefaultListComponent(
                 val initialCardConfigs = mutableListOf<CardConfig>()
                 for (i in 0 until 3) {
                     val word = getRandomWord(words)
-                    initialCardConfigs.add(word.toConfig())
+                    initialCardConfigs.add(word.toConfig(id++))
                 }
                 initialCardConfigs.setLastItem { it.copy(isDraggable = true) }
             }
@@ -88,19 +100,19 @@ internal class DefaultListComponent(
     private fun card(config: CardConfig, componentContext: ComponentContext): CardComponent =
         CardComponentImpl(
             componentContext = componentContext,
+            id = config.id,
             title = config.title,
             subtitle = config.subtitle,
             isDraggable = config.isDraggable,
-            color = config.color
         )
 
 
     @Serializable
     private data class CardConfig(
+        val id: Long,
         val title: String,
         val subtitle: String,
         val isDraggable: Boolean = false,
-        val color: ColorRGBA = RandomColor(),
     )
 
 
@@ -127,9 +139,9 @@ internal class DefaultListComponent(
 
     companion object {
 
-        private fun WordTranslate.toConfig(): CardConfig =
+        private fun WordTranslate.toConfig(id: Long): CardConfig =
             CardConfig(
-                title = word, subtitle = translate
+                id = id, title = word, subtitle = translate
             )
     }
 }

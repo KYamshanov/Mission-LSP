@@ -9,19 +9,19 @@ import ru.mission.glossary.models.ColorRGBA
 
 class CardComponentImpl(
     componentContext: ComponentContext,
+    id: Long,
     title: String,
     subtitle: String,
     isDraggable: Boolean,
-    color: ColorRGBA,
 ) : CardComponent, ComponentContext by componentContext {
 
     private val _model =
         MutableValue(
             CardComponent.Model(
+                id = id,
                 title = title,
                 subtitle = subtitle,
                 isDraggable = isDraggable,
-                colorRGBA = color,
                 blurredSubtitle = true
             )
         )

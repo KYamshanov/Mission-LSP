@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,16 +19,20 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import org.jetbrains.compose.resources.painterResource
+import ru.mission.glossary.components.CardComponent
 import ru.mission.glossary.components.ListComponent
 import ru.mission.glossary.theme.MissionTheme
 import ru.mission.glossary.uikit.components.DraggableCard
 import ru.mission.glossary.uikit.utils.toPx
 import kotlin.math.min
+import kotlin.random.Random
 
 @Composable
 fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
@@ -40,8 +45,31 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
         Item(it.configuration, it.instance, MutableTransitionState(initialState = true))
     }
 
+    var lastColors by remember { mutableStateOf(emptyMap<Long, Color>()) }
+
+    lastColors = lastColors.toMutableMap()
+        .filter { items.firstOrNull { v -> it.key == v.instance.model.value.id } != null }
+        .toMutableMap()
+        .apply {
+            items.forEach { (k, v) ->
+                val id = v.model.value.id
+                if (!containsKey(id)) {
+                    put(id, MissionTheme.palette.colors.random())
+                }
+            }
+        }
+
+
     var dragTotalOffset by remember { mutableStateOf<Offset>(Offset.Zero) }
 
+    MissionTheme.palette.background?.let {
+        Image(
+            modifier = modifier.fillMaxSize(),
+            contentScale = ContentScale.FillBounds,
+            painter = painterResource(it),
+            contentDescription = null
+        )
+    }
 
 
     DisposableEffect(items) {
@@ -53,21 +81,24 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize().onPlaced { layoutSize = it.size },
         contentAlignment = Alignment.Center,
     ) {
+
         val dragDistanceThreshold = min(200.dp.toPx(), layoutSize.width / 3f)
         val feedbackBufferThreshold = dragDistanceThreshold / 4
 
         if (layoutSize.width > 0) {
             val alphaState by animateFloatAsState(
                 targetValue = ((dragTotalOffset.getDistance() - feedbackBufferThreshold) / (dragDistanceThreshold))
-                    .coerceIn(0f, 1f),
+                    .coerceIn(0f, 0.8f),
                 animationSpec = tween(easing = LinearEasing)
             )
             Box(
                 modifier = modifier.fillMaxSize()
                     .run {
+                        val successColor = MissionTheme.palette.success
+                        val mistakeColor = MissionTheme.palette.failure
                         var color by remember { mutableStateOf(Color.Unspecified) }
                         if (alphaState > 0.1f && dragTotalOffset.getDistance() > 0) {
-                            color = if (dragTotalOffset.x > 0) Color.Green else Color.Red
+                            color = if (dragTotalOffset.x > 0) successColor else mistakeColor
                         }
                         val alpha = alphaState
                         background(color.copy(alpha = alpha))
@@ -103,18 +134,14 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
                             }
                         }
 
-                        val colorRGBA = model.colorRGBA
+                        val colorRGBA = lastColors[instance.model.value.id] ?: Color.Unspecified
 
                         Column(
                             modifier = modifier
                                 .defaultMinSize(minWidth = 256.dp, minHeight = 220.dp)
                                 .shadow(elevation = 4.dp, shape = RoundedCornerShape(size = 16.dp), clip = true)
                                 .background(
-                                    Color(
-                                        red = colorRGBA.red,
-                                        green = colorRGBA.green,
-                                        blue = colorRGBA.blue
-                                    )
+                                    colorRGBA
                                 )
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(
