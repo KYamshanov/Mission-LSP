@@ -85,13 +85,22 @@ fun DraggableCard(
     DisposableEffect(animatedOffset, mode, offsetY) {
         if ((mode == Mode.UP) && (animatedOffset.y == dragTotalOffset.value.y * 1.1f)) {
             onSwiped()
-            mode = Mode.DOWN
+            mode = Mode.IDLE
+            onDrag(Offset.Zero)
         } else if ((mode == Mode.DOWN) && (animatedOffset.y == offsetY)) {
             mode = Mode.IDLE
         }
 
         onDispose {}
     }
+
+
+    LaunchedEffect(animatedOffset) {
+        if (mode == Mode.DOWN){
+            onDrag(animatedOffset)
+        }
+    }
+
 
     var rememberCardSwipeState by remember { mutableStateOf<CardSwipeState>(CardSwipeState.Down) }
 
@@ -115,7 +124,6 @@ fun DraggableCard(
                         onDragEnd = {
                             mode =
                                 if (dragTotalOffset.value.getDistance() > dragDistanceThreshold) Mode.UP else Mode.DOWN
-                            onDrag(Offset.Zero)
                         },
                         onDrag = { change, dragAmount ->
                             change.consume()

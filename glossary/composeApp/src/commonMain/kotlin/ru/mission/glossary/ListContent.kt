@@ -1,6 +1,6 @@
 package ru.mission.glossary
 
-import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -33,7 +33,6 @@ import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import ru.mission.glossary.components.ListComponent
 import ru.mission.glossary.theme.MissionTheme
-import ru.mission.glossary.uikit.components.CardSwipeState
 import ru.mission.glossary.uikit.components.DraggableCard
 import ru.mission.glossary.uikit.utils.toPx
 import kotlin.math.abs
@@ -52,6 +51,8 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
 
     var dragTotalOffset by remember { mutableStateOf<Offset>(Offset.Zero) }
 
+
+
     DisposableEffect(items) {
         lastItems = lastItems.diff(items)
         onDispose {}
@@ -65,13 +66,19 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
         val feedbackBufferThreshold = dragDistanceThreshold / 4
 
         if (layoutSize.width > 0) {
+            val alphaState by animateFloatAsState(
+                targetValue = ((dragTotalOffset.getDistance() - feedbackBufferThreshold) / (dragDistanceThreshold))
+                    .coerceIn(0f, 1f),
+                animationSpec = tween(easing = LinearEasing)
+            )
             Box(
                 modifier = modifier.fillMaxSize()
                     .run {
-                        val color = if (dragTotalOffset.x > 0) Color.Green else Color.Red
-                        val alpha =
-                            ((dragTotalOffset.getDistance() - feedbackBufferThreshold) / (dragDistanceThreshold))
-                                .coerceIn(0f, 1f)
+                        var color by remember { mutableStateOf(Color.Unspecified) }
+                        if (alphaState > 0.1f && dragTotalOffset.getDistance() > 0) {
+                            color = if (dragTotalOffset.x > 0) Color.Green else Color.Red
+                        }
+                        val alpha = alphaState
                         background(color.copy(alpha = alpha))
                     },
                 contentAlignment = Alignment.Center,
@@ -87,7 +94,7 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
                     scale = 1F - indexFromEnd.toFloat() / 20F,
                     dragDistanceThreshold = dragDistanceThreshold,
                     isDraggable = instance.model.value.isDraggable,
-                    onSwiped = { component.onCardSwiped(index) },
+                    onSwiped = { component.onCardSwiped(index, dragTotalOffset.x > 0) },
                     onDrag = {
                         dragTotalOffset = it
                     }

@@ -72,6 +72,7 @@ internal class DefaultListComponent(
     init {
         scope.launch {
             val dictionary = dictionary.getWordsWithTesting(collectionId)
+            println("DEBUG:: Words loaded: $dictionary")
             words = dictionary
             navigation.navigate {
                 val initialCardConfigs = mutableListOf<CardConfig>()
@@ -115,6 +116,7 @@ internal class DefaultListComponent(
             }
                 ?: firstTestingModel(wordTranslateTestingModelPair.first.wordId, isSuccess)
             dictionary.saveTesting(updatedTestingModel)
+            println("DEBUG:: Updated testing stat. $updatedTestingModel")
             withContext(mainContext) {
                 val newList = words.toMutableList()
                 newList[wordTranslateIndex] = wordTranslateTestingModelPair.copy(second = updatedTestingModel)

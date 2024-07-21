@@ -8,6 +8,7 @@ import kotlinx.serialization.json.Json
 import ru.mission.glossary.models.DictionaryGetResult
 import ru.mission.glossary.models.TranslateCollectionRoot
 import ru.mission.glossary.models.WordTranslate
+import ru.mission.glossary.models.WordTranslateNoId
 import ru.mission.glossary.models.WordsDictionary
 
 internal class WebViewParser(
@@ -28,7 +29,7 @@ internal class WebViewParser(
         val name = responseModel.translateCollection?.name
         val words = responseModel.translateCollection?.records?.mapNotNull {
             if (it.text != null && it.translation != null)
-                WordTranslate(it.text, it.translation) else
+                WordTranslateNoId(it.text, it.translation) else
                 null
         }
         return DictionaryGetResult.Success(WordsDictionary(name ?: "Collection", words!!))

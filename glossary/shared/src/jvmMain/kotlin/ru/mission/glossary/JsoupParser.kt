@@ -37,9 +37,8 @@ internal class JsoupParser : SingleAppParser {
 
                     val name = responseModel.translateCollection?.name
                     val words = responseModel.translateCollection?.records?.mapNotNull {
-                        if (it.text != null && it.translation != null)
-                            WordTranslateNoId(it.text, it.translation) else
-                            null
+                        if (it.text != null && it.translation != null) WordTranslateNoId(it.text, it.translation)
+                        else null
                     }
                     wordsDictionaryFlow.update { words?.let { WordsDictionary(name ?: "Collection", it) } }
                 }
