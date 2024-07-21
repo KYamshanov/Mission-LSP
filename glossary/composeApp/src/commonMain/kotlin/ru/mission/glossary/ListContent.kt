@@ -9,22 +9,28 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import glossary.ui.compose.kit.generated.resources.Res
+import glossary.ui.compose.kit.generated.resources.close
 import org.jetbrains.compose.resources.painterResource
 import ru.mission.glossary.components.CardComponent
 import ru.mission.glossary.components.ListComponent
@@ -65,7 +71,7 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
     MissionTheme.palette.background?.let {
         Image(
             modifier = modifier.fillMaxSize(),
-            contentScale = ContentScale.FillBounds,
+            contentScale = ContentScale.Crop,
             painter = painterResource(it),
             contentDescription = null
         )
@@ -81,6 +87,7 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize().onPlaced { layoutSize = it.size },
         contentAlignment = Alignment.Center,
     ) {
+
 
         val dragDistanceThreshold = min(200.dp.toPx(), layoutSize.width / 3f)
         val feedbackBufferThreshold = dragDistanceThreshold / 4
@@ -130,7 +137,8 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
 
                         DisposableEffect(Unit) {
                             onDispose {
-                                lastItems = lastItems.filterNot { it.configuration == configuration }
+                                lastItems =
+                                    lastItems.filterNot { it.configuration == configuration }
                             }
                         }
 
@@ -139,7 +147,11 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
                         Column(
                             modifier = modifier
                                 .defaultMinSize(minWidth = 256.dp, minHeight = 220.dp)
-                                .shadow(elevation = 4.dp, shape = RoundedCornerShape(size = 16.dp), clip = true)
+                                .shadow(
+                                    elevation = 4.dp,
+                                    shape = RoundedCornerShape(size = 16.dp),
+                                    clip = true
+                                )
                                 .background(
                                     colorRGBA
                                 )
@@ -157,22 +169,43 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
                             )
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            Text(
-                                modifier = Modifier.clickable { instance.clickOnSubtitle() }
-                                    .run {
-                                        if (model.blurredSubtitle) blur(
-                                            5.dp,
-                                            BlurredEdgeTreatment.Unbounded
-                                        ) else this
-                                    },
-                                text = model.subtitle,
-                                style = MissionTheme.typography.inputText
-                            )
+                            if (model.blurredSubtitle) {
+                                BlurredBox(radius = 5.dp) {
+                                    Text(
+                                        modifier = Modifier.clickable { instance.clickOnSubtitle() },
+                                        text = model.subtitle,
+                                        style = MissionTheme.typography.inputText
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    modifier = Modifier.clickable { instance.clickOnSubtitle() },
+                                    text = model.subtitle,
+                                    style = MissionTheme.typography.inputText
+                                )
+                            }
                         }
                     }
                 }
             }
             //    }
+        }
+
+        Box(
+            modifier = Modifier.align(Alignment.TopStart)
+                .padding(top = 16.dp, start = 12.dp)
+                .windowInsetsPadding(WindowInsets.safeDrawing),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable { component.onBack() }
+                    .padding(8.dp),
+                painter = painterResource(Res.drawable.close),
+                contentDescription = "close",
+                colorFilter = ColorFilter.tint(color = Color.White)
+            )
         }
     }
 }

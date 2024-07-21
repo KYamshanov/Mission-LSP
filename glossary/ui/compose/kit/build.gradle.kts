@@ -52,3 +52,7 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
 }
+
+compose.resources {
+    publicResClass = true
+}
