@@ -1,7 +1,18 @@
 package ru.mission.glossary.models
 
-data class WordTranslate(
+sealed interface WordTranslate {
+
+    val word: String
+    val translate: String
+}
+
+data class WordTranslateNoId(
+    override val word: String,
+    override val translate: String,
+) : WordTranslate
+
+data class WordTranslateWithId(
     val wordId: Long,
-    val word: String,
-    val translate: String,
-)
+    override val word: String,
+    override val translate: String,
+) : WordTranslate

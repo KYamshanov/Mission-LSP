@@ -29,7 +29,6 @@ kotlin {
             implementation(libs.koin.core) //DI framework
             implementation(libs.sqldelight.coroutines)
             implementation(libs.ktor.client.core) //ktor. Network driver
-
         }
 
         androidMain.dependencies {
@@ -44,6 +43,10 @@ kotlin {
             implementation(libs.selenium.java) // for execute single page app
             implementation(libs.sqldelight.jvm)
             implementation(libs.ktor.client.okhttp)
+        }
+
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
         }
     }
 }

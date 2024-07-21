@@ -15,6 +15,7 @@ import ru.mission.glossary.components.ListComponent
 import kotlin.coroutines.CoroutineContext
 import kotlinx.serialization.Serializable
 import ru.mission.glossary.components.CardComponent
+import ru.mission.glossary.getRandomWord
 import ru.mission.glossary.models.*
 import ru.mission.glossary.setLastItem
 import kotlin.random.Random
@@ -29,7 +30,7 @@ internal class DefaultListComponent(
     private val back: () -> Unit,
 ) : ListComponent, ComponentContext by componentContext {
 
-    private var words: List<Pair<WordTranslate, TestingModel?>> = emptyList()
+    private var words: List<Pair<WordTranslateWithId, TestingModel?>> = emptyList()
 
     private val navigation = StackNavigation<CardConfig>()
 
@@ -55,7 +56,7 @@ internal class DefaultListComponent(
     override fun onCardSwiped(index: Int, isSuccess: Boolean) {
         navigation.navigate { stack ->
             val oldCardConfig = stack[index]
-            val newWordConfig = getRandomWord().toConfig()
+            val newWordConfig = getRandomWord(words).toConfig()
             updateStatistic(oldCardConfig.title, isSuccess)
             listOf(newWordConfig) + (stack - oldCardConfig).setLastItem { it.copy(isDraggable = true) }
         }
@@ -75,7 +76,7 @@ internal class DefaultListComponent(
             navigation.navigate {
                 val initialCardConfigs = mutableListOf<CardConfig>()
                 for (i in 0 until 3) {
-                    val word = getRandomWord()
+                    val word = getRandomWord(words)
                     initialCardConfigs.add(word.toConfig())
                 }
                 initialCardConfigs.setLastItem { it.copy(isDraggable = true) }

@@ -56,9 +56,10 @@ internal class DefaultRootComponent(
                 navigation.push(Config.Details(item = item)) // Push the details component
             },
             mainContext = mainContext,
+            defaultContext = defaultContext,
             dictionary = dictionary,
             collectionId = config.collectionId,
-            back = { navigation.pop() }
+            back = { navigation.pop() },
         )
 
     private fun detailsComponent(componentContext: ComponentContext, config: Config.Details): DetailsComponent =

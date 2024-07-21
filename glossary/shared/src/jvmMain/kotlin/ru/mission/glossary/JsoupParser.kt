@@ -7,10 +7,8 @@ import org.openqa.selenium.devtools.v124.network.Network
 import org.openqa.selenium.devtools.v124.network.model.ResponseReceived
 import org.openqa.selenium.edge.EdgeDriver
 import org.openqa.selenium.edge.EdgeOptions
+import ru.mission.glossary.models.*
 import ru.mission.glossary.models.DictionaryGetResult
-import ru.mission.glossary.models.TranslateCollectionRoot
-import ru.mission.glossary.models.WordTranslate
-import ru.mission.glossary.models.WordsDictionary
 import java.util.*
 
 
@@ -40,7 +38,7 @@ internal class JsoupParser : SingleAppParser {
                     val name = responseModel.translateCollection?.name
                     val words = responseModel.translateCollection?.records?.mapNotNull {
                         if (it.text != null && it.translation != null)
-                            WordTranslate(it.text, it.translation) else
+                            WordTranslateNoId(it.text, it.translation) else
                             null
                     }
                     wordsDictionaryFlow.update { words?.let { WordsDictionary(name ?: "Collection", it) } }

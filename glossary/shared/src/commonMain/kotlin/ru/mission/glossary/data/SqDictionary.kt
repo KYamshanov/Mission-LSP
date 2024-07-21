@@ -7,6 +7,7 @@ import ru.mission.glossary.Dictionary
 import ru.mission.glossary.models.Collection
 import ru.mission.glossary.models.TestingModel
 import ru.mission.glossary.models.WordTranslate
+import ru.mission.glossary.models.WordTranslateWithId
 import kotlin.coroutines.CoroutineContext
 
 internal class SqDictionary(
@@ -24,9 +25,9 @@ internal class SqDictionary(
             .let { Collection(it.id, it.name) }
     }
 
-    override suspend fun getWords(collectionId: Long): List<WordTranslate> = withContext(ioContext) {
+    override suspend fun getWords(collectionId: Long): List<WordTranslateWithId> = withContext(ioContext) {
         database.dictionaryQueries.selectCollectionDictonary(collectionId).executeAsList()
-            .map { WordTranslate(it.wordId, it.word, it.translate) }
+            .map { WordTranslateWithId(it.wordId, it.word, it.translate) }
     }
 
     override suspend fun saveCollection(withName: String, words: List<WordTranslate>): Collection =
@@ -46,7 +47,7 @@ internal class SqDictionary(
             }
         }
 
-    override suspend fun getWordsWithTesting(collectionId: Long): List<Pair<WordTranslate, TestingModel?>> =
+    override suspend fun getWordsWithTesting(collectionId: Long): List<Pair<WordTranslateWithId, TestingModel?>> =
         withContext(ioContext) {
             database.dictionaryQueries.selectCollectionDictonaryWithTesting(collectionId).executeAsList()
                 .map {
@@ -60,7 +61,7 @@ internal class SqDictionary(
                             )
                         } else null
 
-                    WordTranslate(it.wordId, it.word, it.translate) to testingModel
+                    WordTranslateWithId(it.wordId, it.word, it.translate) to testingModel
                 }
         }
 
