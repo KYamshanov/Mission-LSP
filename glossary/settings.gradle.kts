@@ -29,6 +29,7 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+include(":androidComposeApp")
 include(":shared")
 include(":ui:compose:kit")
 include(":ui:compose:theme")

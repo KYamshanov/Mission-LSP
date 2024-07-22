@@ -1,36 +1,18 @@
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.window.WindowDraggableArea
-import androidx.compose.material.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyShortcut
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.window.*
 import com.arkivanov.decompose.DefaultComponentContext
-import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import lib.ca.fredperr.customtitlebar.titlebar.TBJFrame
+import lib.ca.fredperr.customtitlebar.titlebar.theme.DarkTBTheme
+import lib.ca.fredperr.customtitlebar.titlebar.win.WindowFrameType
 import org.koin.core.context.GlobalContext
 import ru.mission.glossary.App
-import ru.mission.glossary.di.initKoin
 import ru.mission.glossary.components.factory.RootComponentFactory
-import java.awt.event.MouseEvent
-import java.awt.event.MouseListener
-import javax.swing.JFrame
+import ru.mission.glossary.di.initKoin
+import java.awt.BorderLayout
+import java.awt.Dimension
+import java.awt.Font
+import javax.swing.*
 
 fun main() {
     initKoin { }
@@ -43,7 +25,68 @@ fun main() {
             GlobalContext.get().get<RootComponentFactory>().create(componentContext)
         }
 
-    application {
+
+    SwingUtilities.invokeLater {
+        val window: lib.ca.fredperr.customtitlebar.titlebar.TBJFrame =
+            lib.ca.fredperr.customtitlebar.titlebar.TBJFrame(
+                "TBDemo",
+                lib.ca.fredperr.customtitlebar.titlebar.win.WindowFrameType.NORMAL,
+                lib.ca.fredperr.customtitlebar.titlebar.theme.DarkTBTheme(),
+                20
+            )
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+        window.setMinimumSize(Dimension(720, 480))
+        window.setLocationRelativeTo(null)
+
+
+        // Setting UI attributes
+        val font = Font("SansSerif", Font.PLAIN, 14)
+
+        UIManager.put("Menu.selectionBackground", java.awt.Color(177, 96, 96))
+        UIManager.put("Menu.selectionForeground", java.awt.Color.lightGray)
+        UIManager.put("MenuBar.background", window.getTheme().getFrameBackground())
+        UIManager.put("Menu.background", window.getTheme().getFrameBackground())
+        UIManager.put("Menu.foreground", java.awt.Color.lightGray)
+        UIManager.put("Menu.border", BorderFactory.createEmptyBorder(5, 2, 5, 2))
+        UIManager.put("Menu.font", font)
+
+
+        // Adding some components
+        val menuBar = JMenuBar()
+        menuBar.border = BorderFactory.createEmptyBorder()
+        menuBar.add(JMenu("File"))
+        menuBar.add(JMenu("Edit"))
+        menuBar.add(JMenu("View"))
+        menuBar.add(JMenu("Help"))
+
+        val title: JLabel = JLabel(window.getTitle())
+        title.font = font
+        title.foreground = java.awt.Color.GRAY
+        title.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
+
+        window.getCustomAreaPanel().add(title)
+        window.getCustomAreaPanel().add(menuBar)
+
+        window.pack()
+        window.setVisible(true)
+        // addind ComposePanel on JFrame
+
+        val composePanel = ComposePanel()
+
+        window.contentPane.add(composePanel, BorderLayout.CENTER)
+
+        // setting the content
+
+        composePanel.setContent {
+            App(root)
+        }
+
+        window.setSize(800, 600)
+        window.isVisible = true
+    }
+
+
+/*    application {
         val windowState = rememberWindowState()
 
         LifecycleController(lifecycle, windowState)
@@ -53,7 +96,12 @@ fun main() {
             state = windowState,
             title = "Glossary",
         ) {
+
+
+            window.isUndecorated = true
+            window.rootPane.setWindowDecorationStyle(JRootPane.FRAME);
+            //window.contentPane.layout.layoutContainer(MetalRootPaneUI())
             App(root)
         }
-    }
+    }*/
 }
