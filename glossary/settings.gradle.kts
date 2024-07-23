@@ -28,7 +28,9 @@ dependencyResolutionManagement {
     }
 }
 
-include(":composeApp")
+include(":appPlatforms:desktopComposeApp")
+include(":appPlatforms:androidComposeApp")
+include(":appPlatforms:composeAppShared")
 include(":shared")
 include(":ui:compose:kit")
 include(":ui:compose:theme")
