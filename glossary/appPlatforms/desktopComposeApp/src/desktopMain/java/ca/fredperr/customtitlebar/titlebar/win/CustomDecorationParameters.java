@@ -9,8 +9,8 @@ public class CustomDecorationParameters {
     private static AtomicInteger extraLeftReservedWidth = new AtomicInteger(0);
     private static AtomicInteger extraRightReservedWidth = new AtomicInteger(0);
     private static AtomicInteger maximizedWindowFrameThickness = new AtomicInteger(0);
-    private static AtomicInteger frameResizeBorderThickness = new AtomicInteger(5);
-    private static AtomicInteger frameBorderThickness = new AtomicInteger(5);
+    private static AtomicInteger frameResizeBorderThickness = new AtomicInteger(10);
+    private static AtomicInteger frameBorderThickness = new AtomicInteger(10);
 
     public static int getControlBoxWidth() {
         return controlBoxWidth.get();

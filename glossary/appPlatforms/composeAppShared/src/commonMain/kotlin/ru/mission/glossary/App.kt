@@ -10,10 +10,10 @@ import ru.mission.glossary.theme.MissionTheme
 
 @Composable
 @Preview
-fun App(rootComponent: RootComponent) {
+fun App(rootComponent: RootComponent, modifier: Modifier = Modifier.fillMaxSize()) {
     MissionTheme {
-        Surface(modifier = Modifier.fillMaxSize(), color = MissionTheme.colors.background) {
-            RootContent(component = rootComponent, modifier = Modifier.fillMaxSize())
+        Surface(modifier = modifier, color = MissionTheme.colors.background) {
+            RootContent(component = rootComponent)
         }
     }
 }
