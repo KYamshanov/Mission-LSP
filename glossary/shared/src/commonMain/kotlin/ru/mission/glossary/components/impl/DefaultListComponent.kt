@@ -68,8 +68,8 @@ internal class DefaultListComponent(
     override fun onCardSwiped(index: Int, isSuccess: Boolean) {
         navigation.navigate { stack ->
             val oldCardConfig = stack[index]
-            val newWordConfig = getRandomWord(words).toConfig(id++)
             updateStatistic(oldCardConfig.title, isSuccess)
+            val newWordConfig = getRandomWord(words).toConfig(id++)
             listOf(newWordConfig) + (stack - oldCardConfig).setLastItem { it.copy(isDraggable = true) }
         }
     }
@@ -80,16 +80,17 @@ internal class DefaultListComponent(
 
     private val scope = coroutineScope(mainContext + SupervisorJob())
 
-
     init {
         scope.launch {
             val dictionary = dictionary.getWordsWithTesting(collectionId)
             println("DEBUG:: Words loaded: $dictionary")
             words = dictionary
+            val mutableWords = words.toMutableList()
             navigation.navigate {
                 val initialCardConfigs = mutableListOf<CardConfig>()
                 for (i in 0 until 3) {
                     val word = getRandomWord(words)
+                    mutableWords.removeIf { it.first == word }
                     initialCardConfigs.add(word.toConfig(id++))
                 }
                 initialCardConfigs.setLastItem { it.copy(isDraggable = true) }
@@ -106,7 +107,6 @@ internal class DefaultListComponent(
             isDraggable = config.isDraggable,
         )
 
-
     @Serializable
     private data class CardConfig(
         val id: Long,
@@ -115,25 +115,22 @@ internal class DefaultListComponent(
         val isDraggable: Boolean = false,
     )
 
-
     private fun updateStatistic(word: String, isSuccess: Boolean) {
+        val wordTranslateIndex = words.indexOfFirst { it.first.word == word }.takeIf { it != -1 } ?: return
+        val wordTranslateTestingModelPair = words[wordTranslateIndex]
+        val updatedTestingModel = wordTranslateTestingModelPair.second?.let {
+            it.copy(
+                checkCount = it.checkCount + 1,
+                successCount = it.successCount + if (isSuccess) 1 else 0
+            )
+        }
+            ?: firstTestingModel(wordTranslateTestingModelPair.first.wordId, isSuccess)
+        val newList = words.toMutableList()
+        newList[wordTranslateIndex] = wordTranslateTestingModelPair.copy(second = updatedTestingModel)
+        words = newList
         scope.launch(defaultContext) {
-            val wordTranslateIndex = words.indexOfFirst { it.first.word == word }.takeIf { it != -1 } ?: return@launch
-            val wordTranslateTestingModelPair = words[wordTranslateIndex]
-            val updatedTestingModel = wordTranslateTestingModelPair.second?.let {
-                it.copy(
-                    checkCount = it.checkCount + 1,
-                    successCount = it.successCount + if (isSuccess) 1 else 0
-                )
-            }
-                ?: firstTestingModel(wordTranslateTestingModelPair.first.wordId, isSuccess)
             dictionary.saveTesting(updatedTestingModel)
             println("DEBUG:: Updated testing stat. $updatedTestingModel")
-            withContext(mainContext) {
-                val newList = words.toMutableList()
-                newList[wordTranslateIndex] = wordTranslateTestingModelPair.copy(second = updatedTestingModel)
-                words = newList
-            }
         }
     }
 
