@@ -21,4 +21,6 @@ internal interface Dictionary {
     suspend fun getWordsWithTesting(collectionId: Long): List<Pair<WordTranslateWithId, TestingModel?>>
 
     suspend fun saveTesting(testingModel: TestingModel): TestingModel
+
+    suspend fun setImageUrl(wordId: Long, imageUrl: String): WordTranslateWithId
 }

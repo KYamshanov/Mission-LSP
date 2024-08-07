@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        
+        {
+            "name": "desktopComposeApp",
+            "type": "gradle",
+            "tasks": [":appPlatforms:desktopComposeApp:desktopRun"],
+            "args": ["-DmainClass=MainKt", "--quiet"],
+            "initScripts": {
+                "flmapper": "ext.mapPath = { path -> path }"
+            }
+        }
+    ]
+}

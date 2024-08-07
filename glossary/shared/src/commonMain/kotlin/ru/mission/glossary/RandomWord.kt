@@ -1,17 +1,17 @@
 package ru.mission.glossary
 
-import kotlin.math.pow
-import kotlin.math.sqrt
 import kotlinx.datetime.Clock
 import ru.mission.glossary.models.TestingModel
-import ru.mission.glossary.models.WordTranslate
+import ru.mission.glossary.models.WordTranslateWithId
+import kotlin.math.pow
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 fun getRandomWord(
-    words: List<Pair<WordTranslate, TestingModel?>>,
+    words: List<Pair<WordTranslateWithId, TestingModel?>>,
     random: Random = Random(Clock.System.now().toEpochMilliseconds()),
     mode: Int = random.nextInt(5),
-): WordTranslate {
+): WordTranslateWithId {
     return when (mode) {
         0 -> {
             //random word of the no long checked

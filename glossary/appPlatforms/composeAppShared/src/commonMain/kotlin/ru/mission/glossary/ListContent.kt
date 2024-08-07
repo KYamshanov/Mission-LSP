@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -26,8 +28,11 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.arkivanov.decompose.router.stack.items
+import com.github.panpf.sketch.AsyncImage
 import glossary.ui.compose.kit.generated.resources.Res
 import glossary.ui.compose.kit.generated.resources.close
+import glossary.ui.compose.kit.generated.resources.ic_done
 import org.jetbrains.compose.resources.painterResource
 import ru.mission.glossary.components.ListComponent
 import ru.mission.glossary.theme.MissionTheme
@@ -46,13 +51,15 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
         Item(it.configuration, it.instance, MutableTransitionState(initialState = true))
     }
 
+    var cardEditImageUrl by remember { mutableStateOf<Long?>(null) }
+
     var lastColors by remember { mutableStateOf(emptyMap<Long, Color>()) }
 
     lastColors = lastColors.toMutableMap()
         .filter { items.firstOrNull { v -> it.key == v.instance.model.value.id } != null }
         .toMutableMap()
         .apply {
-            items.forEach { (k, v) ->
+            items.forEach { (_, v) ->
                 val id = v.model.value.id
                 if (!containsKey(id)) {
                     put(id, MissionTheme.palette.colors.random())
@@ -111,6 +118,7 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
         lastItems.forEachIndexed { index, (configuration, instance, transitionState) ->
             key(instance) {
                 val indexFromEnd = lastItems.lastIndex - index
+                val model by instance.model.subscribeAsState()
 
                 DraggableCard(
                     layoutSize = layoutSize,
@@ -123,12 +131,12 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
                         dragTotalOffset = it
                     }
                 ) {
+
                     androidx.compose.animation.AnimatedVisibility(
                         visibleState = transitionState,
                         enter = fadeIn() + scaleIn(),
                         exit = fadeOut() + scaleOut(),
                     ) {
-                        val model by instance.model.subscribeAsState()
 
                         DisposableEffect(Unit) {
                             onDispose {
@@ -139,7 +147,7 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
 
                         val colorRGBA = lastColors[instance.model.value.id] ?: Color.Unspecified
 
-                        Column(
+                        Box(
                             modifier = modifier
                                 .defaultMinSize(minWidth = 256.dp, minHeight = 220.dp)
                                 .shadow(
@@ -149,35 +157,49 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
                                 )
                                 .background(
                                     colorRGBA
-                                )
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(
-                                space = 16.dp,
-                                alignment = Alignment.CenterVertically
-                            ),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                ),
                         ) {
+                            if (!model.blurredSubtitle && model.imageUrl != null) {
+                                val imageUri = model.imageUrl
+                                AsyncImage(
+                                    modifier = Modifier.fillMaxSize(),
+                                    uri = imageUri,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            Column(
+                                modifier = Modifier.fillMaxSize()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(
+                                    space = 16.dp,
+                                    alignment = Alignment.CenterVertically
+                                ),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = model.title,
+                                    style = MissionTheme.typography.mainButtonStyle
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
 
-                            Text(
-                                text = model.title,
-                                style = MissionTheme.typography.mainButtonStyle
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            if (model.blurredSubtitle) {
-                                BlurredBox(radius = 5.dp) {
+                                if (model.blurredSubtitle) {
+                                    cardEditImageUrl = null
+                                    BlurredBox(radius = 5.dp) {
+                                        Text(
+                                            modifier = Modifier.clickable { instance.clickOnSubtitle() },
+                                            text = model.subtitle,
+                                            style = MissionTheme.typography.inputText
+                                        )
+                                    }
+                                } else {
+                                    cardEditImageUrl = model.id
                                     Text(
                                         modifier = Modifier.clickable { instance.clickOnSubtitle() },
                                         text = model.subtitle,
                                         style = MissionTheme.typography.inputText
                                     )
                                 }
-                            } else {
-                                Text(
-                                    modifier = Modifier.clickable { instance.clickOnSubtitle() },
-                                    text = model.subtitle,
-                                    style = MissionTheme.typography.inputText
-                                )
                             }
                         }
                     }
@@ -202,6 +224,22 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
                 colorFilter = ColorFilter.tint(color = Color.White)
             )
         }
+
+        cardEditImageUrl?.let { wordId ->
+            val cardComponent = component.stack.items.first { it.instance.model.value.id == wordId }.instance
+            Box(
+                modifier = Modifier.align(Alignment.TopCenter)
+                    .padding(top = 16.dp, start = 12.dp)
+                    .windowInsetsPadding(WindowInsets.safeDrawing),
+                contentAlignment = Alignment.Center,
+            ) {
+                val imageUrl = cardComponent.model.value.imageUrl
+                UrlEditor(imageUrl.orEmpty()) { url ->
+                    cardEditImageUrl = null
+                    cardComponent.setImageUrl(url)
+                }
+            }
+        }
     }
 }
 
@@ -220,6 +258,36 @@ private fun <T : Any> List<Item<T>>.diff(items: List<Child.Created<*, T>>): List
                 ?: MutableTransitionState(initialState = false).apply { targetState = true },
         )
     } + missingItems
+}
+
+@Composable
+fun UrlEditor(initialUrl: String, onUrlChanged: (String) -> Unit) {
+    var imageUrlInput by remember { mutableStateOf(initialUrl) }
+    Row(
+        modifier = Modifier.alpha(0.5f).windowInsetsPadding(WindowInsets.safeDrawing),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TextField(
+            modifier = Modifier.height(50.dp).widthIn(max = 300.dp),
+            value = imageUrlInput,
+            onValueChange = { imageUrlInput = it },
+        )
+        Box(
+            modifier = Modifier
+                .padding(12.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable { onUrlChanged(imageUrlInput) }
+                    .padding(8.dp),
+                painter = painterResource(Res.drawable.ic_done),
+                contentDescription = "done",
+                colorFilter = ColorFilter.tint(color = Color.White)
+            )
+        }
+    }
 }
 
 private data class Item<out T : Any>(

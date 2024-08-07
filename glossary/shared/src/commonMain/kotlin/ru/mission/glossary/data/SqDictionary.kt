@@ -9,6 +9,7 @@ import ru.mission.glossary.models.TestingModel
 import ru.mission.glossary.models.WordTranslate
 import ru.mission.glossary.models.WordTranslateWithId
 import kotlin.coroutines.CoroutineContext
+import com.example.sqldelight.hockey.data.Dictionary as DataDictionary
 
 internal class SqDictionary(
     private val database: Database,
@@ -27,7 +28,7 @@ internal class SqDictionary(
 
     override suspend fun getWords(collectionId: Long): List<WordTranslateWithId> = withContext(ioContext) {
         database.dictionaryQueries.selectCollectionDictonary(collectionId).executeAsList()
-            .map { WordTranslateWithId(it.wordId, it.word, it.translate) }
+            .map { WordTranslateWithId(it.wordId, it.word, it.translate, it.imageUrl) }
     }
 
     override suspend fun saveCollection(withName: String, words: List<WordTranslate>): Collection =
@@ -37,7 +38,7 @@ internal class SqDictionary(
                 val collectionId = queries.insertCollection(withName)
                     .run { queries.lastInsertRowId().executeAsOne() }
                 val wordsIds = words.map {
-                    queries.insertDictionary(it.word, it.translate)
+                    queries.insertDictionary(it.word, it.translate, it.imageUrl)
                     queries.lastInsertRowId().executeAsOne()
                 }
                 wordsIds.forEach { wordId ->
@@ -61,7 +62,12 @@ internal class SqDictionary(
                             )
                         } else null
 
-                    WordTranslateWithId(it.wordId, it.word, it.translate) to testingModel
+                    WordTranslateWithId(
+                        wordId = it.wordId,
+                        word = it.word,
+                        translate = it.translate,
+                        imageUrl = it.imageUrl
+                    ) to testingModel
                 }
         }
 
@@ -92,4 +98,17 @@ internal class SqDictionary(
             )
         }
     }
+
+    override suspend fun setImageUrl(wordId: Long, imageUrl: String): WordTranslateWithId =
+        with(database.dictionaryQueries) {
+            database.dictionaryQueries.setWordImageUrl(
+                imageUrl = imageUrl, id = wordId
+            )
+            selectWord(wordId).executeAsOne().toWordTranslateWithId()
+        }
 }
+
+private fun DataDictionary.toWordTranslateWithId(): WordTranslateWithId =
+    WordTranslateWithId(
+        wordId = id, word = word, translate = translate, imageUrl = imageUrl
+    )

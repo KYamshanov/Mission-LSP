@@ -40,6 +40,8 @@ kotlin {
 
             implementation(projects.ui.compose.theme)
             implementation(projects.ui.compose.kit)
+
+            implementation(libs.sketch.compose)
         }
 
         androidMain.dependencies {

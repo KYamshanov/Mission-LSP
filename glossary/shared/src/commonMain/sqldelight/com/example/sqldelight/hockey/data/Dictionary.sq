@@ -13,7 +13,8 @@ CREATE TABLE collectionWords (
 CREATE TABLE dictionary (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     word TEXT NOT NULL,
-    translate TEXT NOT NULL
+    translate TEXT NOT NULL,
+    imageUrl TEXT
 );
 
 CREATE TABLE testing (
@@ -48,8 +49,8 @@ INSERT INTO collection (name)
 VALUES (?);
 
 insertDictionary:
-INSERT INTO dictionary (word,translate)
-VALUES (?,?);
+INSERT INTO dictionary (word,translate,imageUrl)
+VALUES (?,?, ?);
 
 insertCollectionWords:
 INSERT INTO collectionWords (collectionId,wordId)
@@ -77,3 +78,13 @@ WHERE wordId = ?;
 insertTesting:
 INSERT INTO testing (wordId, checkCount,successCount, lastCheckDate)
 VALUES (?,?,?,?);
+
+setWordImageUrl:
+UPDATE dictionary
+SET imageUrl = ?
+WHERE id = ?;
+
+selectWord:
+SELECT *
+FROM dictionary
+WHERE id = ?;

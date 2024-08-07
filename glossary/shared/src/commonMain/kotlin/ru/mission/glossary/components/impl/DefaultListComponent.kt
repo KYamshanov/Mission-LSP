@@ -6,21 +6,21 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.navigate
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.essenty.lifecycle.Lifecycle
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ru.mission.glossary.Dictionary
-import ru.mission.glossary.components.ListComponent
-import kotlin.coroutines.CoroutineContext
-import ru.mission.glossary.components.CardComponent
-import ru.mission.glossary.getRandomWord
-import ru.mission.glossary.models.*
-import ru.mission.glossary.setLastItem
-import kotlin.random.Random
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
+import ru.mission.glossary.Dictionary
+import ru.mission.glossary.components.CardComponent
+import ru.mission.glossary.components.ListComponent
+import ru.mission.glossary.getRandomWord
+import ru.mission.glossary.models.TestingModel
+import ru.mission.glossary.models.WordTranslateWithId
+import ru.mission.glossary.models.firstTestingModel
+import ru.mission.glossary.setLastItem
+import kotlin.coroutines.CoroutineContext
 
 internal class DefaultListComponent(
     componentContext: ComponentContext,
@@ -52,10 +52,12 @@ internal class DefaultListComponent(
             initialStack = {
                 listOf(
                     CardConfig(
-                        id = id++,
+                        cardUnicId = id++,
                         title = "Loading...",
                         subtitle = "Загрузка...",
                         isDraggable = false,
+                        wordId = -1,
+                        imageUrl = null
                     )
                 )
             },
@@ -65,11 +67,15 @@ internal class DefaultListComponent(
     override val stack: Value<ChildStack<*, CardComponent>> = _stack
 
     override fun onItemClicked(item: String) = onItemSelected(item)
+
+    private var wordOffset = 0
+
     override fun onCardSwiped(index: Int, isSuccess: Boolean) {
         navigation.navigate { stack ->
             val oldCardConfig = stack[index]
+            val newWordConfig =
+                (if (wordOffset < words.size) words[wordOffset++].first else getRandomWord(words)).toConfig(id++)
             updateStatistic(oldCardConfig.title, isSuccess)
-            val newWordConfig = getRandomWord(words).toConfig(id++)
             listOf(newWordConfig) + (stack - oldCardConfig).setLastItem { it.copy(isDraggable = true) }
         }
     }
@@ -80,19 +86,18 @@ internal class DefaultListComponent(
 
     private val scope = coroutineScope(mainContext + SupervisorJob())
 
+
     init {
         scope.launch {
             val dictionary = dictionary.getWordsWithTesting(collectionId)
             println("DEBUG:: Words loaded: $dictionary")
             words = dictionary
-            val mutableWords = words.toMutableList()
             navigation.navigate {
                 val initialCardConfigs = mutableListOf<CardConfig>()
-                for (i in 0 until 3) {
-                    val word = getRandomWord(words)
-                    mutableWords.removeIf { it.first == word }
+                dictionary.take(3).forEach { (word, _) ->
                     initialCardConfigs.add(word.toConfig(id++))
                 }
+                wordOffset = initialCardConfigs.size
                 initialCardConfigs.setLastItem { it.copy(isDraggable = true) }
             }
         }
@@ -101,44 +106,56 @@ internal class DefaultListComponent(
     private fun card(config: CardConfig, componentContext: ComponentContext): CardComponent =
         CardComponentImpl(
             componentContext = componentContext,
-            id = config.id,
+            id = config.cardUnicId,
             title = config.title,
             subtitle = config.subtitle,
             isDraggable = config.isDraggable,
+            imageUrl = config.imageUrl,
+            onSetImageUrl = {
+                scope.launch {
+                    dictionary.setImageUrl(config.wordId, it)
+                }
+            }
         )
+
 
     @Serializable
     private data class CardConfig(
-        val id: Long,
+        val cardUnicId: Long,
+        val wordId: Long,
         val title: String,
         val subtitle: String,
         val isDraggable: Boolean = false,
+        val imageUrl: String?
     )
 
+
     private fun updateStatistic(word: String, isSuccess: Boolean) {
-        val wordTranslateIndex = words.indexOfFirst { it.first.word == word }.takeIf { it != -1 } ?: return
-        val wordTranslateTestingModelPair = words[wordTranslateIndex]
-        val updatedTestingModel = wordTranslateTestingModelPair.second?.let {
-            it.copy(
-                checkCount = it.checkCount + 1,
-                successCount = it.successCount + if (isSuccess) 1 else 0
-            )
-        }
-            ?: firstTestingModel(wordTranslateTestingModelPair.first.wordId, isSuccess)
-        val newList = words.toMutableList()
-        newList[wordTranslateIndex] = wordTranslateTestingModelPair.copy(second = updatedTestingModel)
-        words = newList
         scope.launch(defaultContext) {
+            val wordTranslateIndex = words.indexOfFirst { it.first.word == word }.takeIf { it != -1 } ?: return@launch
+            val wordTranslateTestingModelPair = words[wordTranslateIndex]
+            val updatedTestingModel = wordTranslateTestingModelPair.second?.let {
+                it.copy(
+                    checkCount = it.checkCount + 1,
+                    successCount = it.successCount + if (isSuccess) 1 else 0
+                )
+            }
+                ?: firstTestingModel(wordTranslateTestingModelPair.first.wordId, isSuccess)
             dictionary.saveTesting(updatedTestingModel)
             println("DEBUG:: Updated testing stat. $updatedTestingModel")
+            withContext(mainContext) {
+                val newList = words.toMutableList()
+                newList[wordTranslateIndex] = wordTranslateTestingModelPair.copy(second = updatedTestingModel)
+                words = newList
+            }
         }
     }
 
     companion object {
 
-        private fun WordTranslate.toConfig(id: Long): CardConfig =
+        private fun WordTranslateWithId.toConfig(id: Long): CardConfig =
             CardConfig(
-                id = id, title = word, subtitle = translate
+                cardUnicId = id, title = word, subtitle = translate, wordId = wordId, imageUrl = imageUrl
             )
     }
 }
