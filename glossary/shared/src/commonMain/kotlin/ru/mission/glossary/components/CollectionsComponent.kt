@@ -8,6 +8,8 @@ interface CollectionsComponent {
 
     fun clickOnCollection(collection: Collection)
 
+    fun shareCollection(collection: Collection)
+
     fun loadNewCollection()
 
     sealed interface Model

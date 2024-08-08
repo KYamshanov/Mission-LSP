@@ -5,7 +5,9 @@ import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideOut
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.offset
@@ -46,6 +48,7 @@ fun DraggableCard(
     dragDistanceThreshold: Float,
     isDraggable: Boolean = true,
     onDrag: (Offset) -> Unit,
+    onClick: () -> Unit,
     content: @Composable () -> Unit,
 ) {
     var cardPosition: Offset by remember { mutableStateOf(Offset.Zero) }
@@ -75,7 +78,7 @@ fun DraggableCard(
 
             Mode.IDLE,
             Mode.DOWN,
-                -> Offset(x = 0F, y = offsetY)
+            -> Offset(x = 0F, y = offsetY)
         },
         animationSpec = if (mode == Mode.DRAG) snap() else tween()
     )
@@ -96,13 +99,14 @@ fun DraggableCard(
 
 
     LaunchedEffect(animatedOffset) {
-        if (mode == Mode.DOWN){
+        if (mode == Mode.DOWN) {
             onDrag(animatedOffset)
         }
     }
 
 
     var rememberCardSwipeState by remember { mutableStateOf<CardSwipeState>(CardSwipeState.Down) }
+    val interactionSource = remember { MutableInteractionSource() }
 
     Box(
         modifier = Modifier
@@ -110,6 +114,10 @@ fun DraggableCard(
                 cardPosition = it.positionInParent()
                 cardSize = it.size
             }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { onClick() }
             .requiredWidthIn(max = 256.dp)
             .offset { animatedOffset.round() }
             .aspectRatio(ratio = 1.5882353F)

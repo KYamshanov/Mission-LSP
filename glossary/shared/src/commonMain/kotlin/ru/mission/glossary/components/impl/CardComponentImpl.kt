@@ -24,7 +24,8 @@ class CardComponentImpl(
                 subtitle = subtitle,
                 isDraggable = isDraggable,
                 blurredSubtitle = true,
-                imageUrl = imageUrl
+                imageUrl = imageUrl,
+                isVisibleImage = false
             )
         )
     override val model: Value<CardComponent.Model> = _model
@@ -32,7 +33,12 @@ class CardComponentImpl(
         _model.update { it.copy(blurredSubtitle = !it.blurredSubtitle) }
     }
 
+    override fun clickOnCard() {
+        _model.update { it.copy(isVisibleImage = !it.isVisibleImage) }
+    }
+
     override fun setImageUrl(url: String) {
         onSetImageUrl(url)
+        _model.update { it.copy(imageUrl = url, isVisibleImage = true) }
     }
 }

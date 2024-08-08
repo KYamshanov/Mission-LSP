@@ -22,6 +22,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.vector.DefaultTintBlendMode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.IntSize
@@ -30,6 +32,10 @@ import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.router.stack.items
 import com.github.panpf.sketch.AsyncImage
+import com.github.panpf.sketch.LocalPlatformContext
+import com.github.panpf.sketch.PlatformContext
+import com.github.panpf.sketch.SingletonSketch
+import com.github.panpf.sketch.request.ImageRequest
 import glossary.ui.compose.kit.generated.resources.Res
 import glossary.ui.compose.kit.generated.resources.close
 import glossary.ui.compose.kit.generated.resources.ic_done
@@ -129,6 +135,9 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
                     onSwiped = { component.onCardSwiped(index, dragTotalOffset.x > 0) },
                     onDrag = {
                         dragTotalOffset = it
+                    },
+                    onClick = {
+                        instance.clickOnCard()
                     }
                 ) {
 
@@ -159,13 +168,15 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
                                     colorRGBA
                                 ),
                         ) {
-                            if (!model.blurredSubtitle && model.imageUrl != null) {
+                            if (model.isVisibleImage && model.imageUrl != null) {
                                 val imageUri = model.imageUrl
                                 AsyncImage(
                                     modifier = Modifier.fillMaxSize(),
-                                    uri = imageUri,
+                                    request = ImageRequest(PlatformContext.INSTANCE, uri = imageUri),
                                     contentDescription = null,
-                                    contentScale = ContentScale.Crop
+                                    contentScale = ContentScale.Crop,
+                                    filterQuality = FilterQuality.None,
+                                    clipToBounds = false
                                 )
                             }
                             Column(

@@ -10,6 +10,8 @@ interface CardComponent {
 
     fun clickOnSubtitle()
 
+    fun clickOnCard()
+
     fun setImageUrl(url: String)
 
     data class Model(
@@ -19,6 +21,7 @@ interface CardComponent {
         val isDraggable: Boolean,
         val colorRGBA: ColorRGBA = RandomColor(),
         val blurredSubtitle: Boolean,
+        val isVisibleImage: Boolean,
         val imageUrl: String?,
     )
 }
