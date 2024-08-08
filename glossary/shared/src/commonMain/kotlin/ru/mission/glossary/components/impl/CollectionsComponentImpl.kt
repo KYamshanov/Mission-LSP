@@ -29,6 +29,10 @@ internal class CollectionsComponentImpl(
         openCollection(collection.id)
     }
 
+    override fun shareCollection(collection: Collection) {
+        TODO("Not yet implemented")
+    }
+
     private val scope = coroutineScope(mainContext + SupervisorJob())
 
     init {
