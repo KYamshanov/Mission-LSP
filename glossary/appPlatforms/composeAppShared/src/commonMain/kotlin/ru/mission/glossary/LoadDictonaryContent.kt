@@ -35,5 +35,16 @@ fun LoadDictionaryContent(component: LoadDictionaryComponent, modifier: Modifier
                 Text("Load Dictionary")
             }
         }
+
+        Column {
+            TextField(
+                value = model.filePath,
+                onValueChange = { component.onSetFilePath(it) }
+            )
+
+            Button(onClick = { component.onClickLoadDictionaryFromFile() }) {
+                Text("Load Dictionary from file")
+            }
+        }
     }
 }

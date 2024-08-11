@@ -27,7 +27,9 @@ internal val commonModule = module {
             singleAppParser = get(),
             mainContext = get(named("main")),
             defaultContext = get(named("default")),
-            dictionary = get()
+            dictionary = get(),
+            shareCollection = get(),
+            loadSharedCollection = get()
         )
     }
 

@@ -1,6 +1,6 @@
 package ru.mission.glossary.data
 
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import kotlinx.datetime.Instant
 import ru.mission.glossary.Database
 import ru.mission.glossary.Dictionary
@@ -99,12 +99,41 @@ internal class SqDictionary(
         }
     }
 
-    override suspend fun setImageUrl(wordId: Long, imageUrl: String): WordTranslateWithId =
+    override suspend fun setImageUrl(wordId: Long, imageUrl: String): WordTranslateWithId = withContext(ioContext) {
         with(database.dictionaryQueries) {
-            database.dictionaryQueries.setWordImageUrl(
+            setWordImageUrl(
                 imageUrl = imageUrl, id = wordId
             )
             selectWord(wordId).executeAsOne().toWordTranslateWithId()
+        }
+    }
+
+    override suspend fun removeWord(wordTranslateWithId: WordTranslateWithId) {
+        with(database.dictionaryQueries) {
+            deleteWord(wordTranslateWithId.wordId)
+        }
+    }
+
+    override suspend fun saveWord(collectionId: Long, wordTranslate: WordTranslate): WordTranslateWithId =
+        withContext(ioContext) {
+            with(database.dictionaryQueries) {
+                transactionWithResult {
+                    insertDictionary(
+                        word = wordTranslate.word,
+                        translate = wordTranslate.translate,
+                        imageUrl = wordTranslate.imageUrl
+                    )
+                    val newWordId = lastInsertRowId().executeAsOne()
+                    insertCollectionWords(collectionId, newWordId)
+                    val dictionary = selectWord(newWordId).executeAsOne()
+                    WordTranslateWithId(
+                        wordId = dictionary.id,
+                        word = dictionary.word,
+                        translate = dictionary.translate,
+                        imageUrl = dictionary.imageUrl
+                    )
+                }
+            }
         }
 }
 

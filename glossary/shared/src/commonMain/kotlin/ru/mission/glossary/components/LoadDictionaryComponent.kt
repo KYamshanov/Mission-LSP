@@ -7,10 +7,15 @@ interface LoadDictionaryComponent {
 
     fun onSetUrl(url: String)
 
+    fun onSetFilePath(absoluteFilePath: String)
+
     fun onClickLoadDictionary()
     fun onBack()
 
+    fun onClickLoadDictionaryFromFile()
+
     data class Model(
         val url: String,
+        val filePath: String,
     )
 }

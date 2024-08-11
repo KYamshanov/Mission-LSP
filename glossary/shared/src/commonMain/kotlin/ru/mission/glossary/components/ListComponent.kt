@@ -11,4 +11,6 @@ interface ListComponent {
     fun onCardSwiped(index: Int, isSuccess: Boolean)
 
     fun onBack()
+
+    fun swipeWordAndTranslate(index: Int)
 }

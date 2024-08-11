@@ -5,6 +5,8 @@ import com.arkivanov.decompose.router.stack.*
 import com.arkivanov.decompose.value.Value
 import kotlinx.serialization.Serializable
 import ru.mission.glossary.Dictionary
+import ru.mission.glossary.LoadSharedCollection
+import ru.mission.glossary.ShareCollection
 import ru.mission.glossary.components.RootComponent.Child.DetailsChild
 import ru.mission.glossary.components.RootComponent.Child.ListChild
 import ru.mission.glossary.SingleAppParser
@@ -17,6 +19,8 @@ internal class DefaultRootComponent(
     private val mainContext: CoroutineContext,
     private val defaultContext: CoroutineContext,
     private val dictionary: Dictionary,
+    private val shareCollection: ShareCollection,
+    private val loadSharedCollection: LoadSharedCollection,
 ) : RootComponent, ComponentContext by componentContext {
 
     private val navigation = StackNavigation<Config>()
@@ -81,7 +85,8 @@ internal class DefaultRootComponent(
             mainContext = mainContext,
             defaultContext = defaultContext,
             singleAppParser = singleAppParser,
-            back = { navigation.pop() }
+            back = { navigation.pop() },
+            loadSharedCollection = loadSharedCollection
         )
 
     private fun collectionsComponent(
@@ -93,7 +98,8 @@ internal class DefaultRootComponent(
             mainContext = mainContext,
             dictionary = dictionary,
             loadCollection = { navigation.push(Config.LoadDictionary()) },
-            openCollection = { navigation.push(Config.List(it)) }
+            openCollection = { navigation.push(Config.List(it)) },
+            shareCollection = shareCollection,
         )
 
     override fun onBackClicked(toIndex: Int) {

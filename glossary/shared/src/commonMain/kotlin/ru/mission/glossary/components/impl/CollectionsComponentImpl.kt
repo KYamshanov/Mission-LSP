@@ -8,16 +8,19 @@ import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import ru.mission.glossary.Dictionary
+import ru.mission.glossary.ShareCollection
 import ru.mission.glossary.components.CollectionsComponent
 import ru.mission.glossary.models.Collection
+import ru.mission.glossary.models.WordsDictionary
 import kotlin.coroutines.CoroutineContext
 
 internal class CollectionsComponentImpl(
     componentContext: ComponentContext,
     mainContext: CoroutineContext,
+    private val shareCollection: ShareCollection,
     private val dictionary: Dictionary,
     private val loadCollection: () -> Unit,
-    private val openCollection: (Long) -> Unit,
+    private val openCollection: (Long) -> Unit
 ) : ComponentContext by componentContext, CollectionsComponent {
 
     private val _model: MutableValue<CollectionsComponent.Model> = MutableValue(CollectionsComponent.Loading)
@@ -30,7 +33,10 @@ internal class CollectionsComponentImpl(
     }
 
     override fun shareCollection(collection: Collection) {
-        TODO("Not yet implemented")
+        scope.launch {
+            shareCollection.share(collection, dictionary.getWords(collection.id))
+                .onFailure { it.printStackTrace() }
+        }
     }
 
     private val scope = coroutineScope(mainContext + SupervisorJob())

@@ -13,7 +13,7 @@ class CardComponentImpl(
     subtitle: String,
     isDraggable: Boolean,
     imageUrl: String?,
-    private val onSetImageUrl: ((String) -> Unit),
+    private val onSetImageUrl: ((url: String) -> Unit),
 ) : CardComponent, ComponentContext by componentContext {
 
     private val _model =

@@ -9,9 +9,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.mission.glossary.Dictionary
+import ru.mission.glossary.LoadSharedCollection
 import ru.mission.glossary.SingleAppParser
 import ru.mission.glossary.components.LoadDictionaryComponent
 import ru.mission.glossary.models.DictionaryGetResult
+import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 internal class LoadDictionaryComponentImpl(
@@ -23,15 +25,20 @@ internal class LoadDictionaryComponentImpl(
     private val onLoadDictionary: (Long) -> Unit,
     private val back: () -> Unit,
     private val dictionary: Dictionary,
+    private val loadSharedCollection: LoadSharedCollection,
 ) : LoadDictionaryComponent, ComponentContext by componentContext {
 
-    private val _model = MutableValue(LoadDictionaryComponent.Model(initialUrl))
+    private val _model = MutableValue(LoadDictionaryComponent.Model(initialUrl, ""))
     override val model: Value<LoadDictionaryComponent.Model> = _model
 
     private val scope = coroutineScope(mainContext + SupervisorJob())
 
     override fun onSetUrl(url: String) {
         _model.update { it.copy(url = url) }
+    }
+
+    override fun onSetFilePath(absoluteFilePath: String) {
+        _model.update { it.copy(filePath = absoluteFilePath) }
     }
 
     override fun onClickLoadDictionary() {
@@ -50,7 +57,7 @@ internal class LoadDictionaryComponentImpl(
             }
             when (result) {
                 is DictionaryGetResult.Failure -> {
-                    //TODO()
+                    result.reason.printStackTrace()
                 }
 
                 is DictionaryGetResult.Success -> {
@@ -65,5 +72,15 @@ internal class LoadDictionaryComponentImpl(
 
     override fun onBack() {
         back()
+    }
+
+    override fun onClickLoadDictionaryFromFile() {
+        scope.launch {
+            loadSharedCollection.load(File(_model.value.filePath))
+                .onFailure { it.printStackTrace() }
+                .onSuccess {
+                    onLoadDictionary(it.id)
+                }
+        }
     }
 }

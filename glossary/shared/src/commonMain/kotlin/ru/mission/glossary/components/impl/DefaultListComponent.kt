@@ -9,6 +9,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
@@ -19,6 +20,7 @@ import ru.mission.glossary.getRandomWord
 import ru.mission.glossary.models.TestingModel
 import ru.mission.glossary.models.WordTranslateWithId
 import ru.mission.glossary.models.firstTestingModel
+import ru.mission.glossary.models.swipeWordAndTranslate
 import ru.mission.glossary.setLastItem
 import kotlin.coroutines.CoroutineContext
 
@@ -84,12 +86,41 @@ internal class DefaultListComponent(
         back()
     }
 
+    override fun swipeWordAndTranslate(index: Int) {
+        navigation.navigate { stack ->
+            val oldCardConfig = stack[index]
+            runBlocking {
+                val wordWithId = WordTranslateWithId(
+                    wordId = oldCardConfig.wordId,
+                    word = oldCardConfig.title,
+                    translate = oldCardConfig.subtitle,
+                    imageUrl = oldCardConfig.imageUrl
+                )
+                dictionary.run {
+                    removeWord(wordWithId)
+                    val oldWordIndex = words.indexOfFirst { it.first.wordId == wordWithId.wordId }
+                    saveWord(collectionId, wordWithId.swipeWordAndTranslate()).also {
+                        words = words.toMutableList().apply {
+                            set(oldWordIndex, it to words[oldWordIndex].second)
+                        }
+                    }
+                    stack.toMutableList().apply {
+                        set(
+                            index,
+                            words[oldWordIndex].first.toConfig(id++).copy(isDraggable = oldCardConfig.isDraggable)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     private val scope = coroutineScope(mainContext + SupervisorJob())
 
 
     init {
         scope.launch {
-            val dictionary = dictionary.getWordsWithTesting(collectionId)
+            val dictionary = dictionary.getWordsWithTesting(collectionId).sortedBy { it.first.word }
             println("DEBUG:: Words loaded: $dictionary")
             words = dictionary
             navigation.navigate {
@@ -126,7 +157,7 @@ internal class DefaultListComponent(
         val title: String,
         val subtitle: String,
         val isDraggable: Boolean = false,
-        val imageUrl: String?
+        val imageUrl: String?,
     )
 
 

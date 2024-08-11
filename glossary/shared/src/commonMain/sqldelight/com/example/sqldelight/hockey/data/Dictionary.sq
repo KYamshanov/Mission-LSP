@@ -6,8 +6,8 @@ CREATE TABLE collection (
 CREATE TABLE collectionWords (
    collectionId INTEGER NOT NULL,
    wordId INTEGER NOT NULL,
-   FOREIGN KEY(collectionId) REFERENCES collection(id),
-   FOREIGN KEY(wordId) REFERENCES dictionary(id)
+   FOREIGN KEY(collectionId) REFERENCES collection(id) ON DELETE CASCADE,
+   FOREIGN KEY(wordId) REFERENCES dictionary(id) ON DELETE CASCADE
 );
 
 CREATE TABLE dictionary (
@@ -22,7 +22,7 @@ CREATE TABLE testing (
    checkCount INTEGER NOT NULL,
    successCount INTEGER NOT NULL,
    lastCheckDate INTEGER NOT NULL,
-   FOREIGN KEY(wordId) REFERENCES dictionary(id)
+   FOREIGN KEY(wordId) REFERENCES dictionary(id) ON DELETE CASCADE
 );
 
 lastInsertRowId:
@@ -87,4 +87,8 @@ WHERE id = ?;
 selectWord:
 SELECT *
 FROM dictionary
+WHERE id = ?;
+
+deleteWord:
+DELETE FROM dictionary
 WHERE id = ?;

@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -125,6 +126,14 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
             key(instance) {
                 val indexFromEnd = lastItems.lastIndex - index
                 val model by instance.model.subscribeAsState()
+
+                if (!model.blurredSubtitle) {
+                    Button(
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        onClick = { component.swipeWordAndTranslate(index) }) {
+                        Text("Swipe")
+                    }
+                }
 
                 DraggableCard(
                     layoutSize = layoutSize,

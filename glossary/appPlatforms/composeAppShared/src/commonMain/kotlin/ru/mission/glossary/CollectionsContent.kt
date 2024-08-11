@@ -2,6 +2,7 @@ package ru.mission.glossary
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.Button
 import ru.mission.glossary.uikit.components.Surface
 import androidx.compose.material.Text
@@ -30,7 +31,14 @@ fun CollectionsContent(component: CollectionsComponent, modifier: Modifier = Mod
             is CollectionsComponent.Done -> {
                 Column {
                     for ((index, collection) in m.collections.withIndex()) {
-                        Text(collection.name, modifier = Modifier.clickable { component.clickOnCollection(collection) })
+                        Row {
+                            Text(collection.name, modifier = Modifier.clickable { component.clickOnCollection(collection) })
+                            Button(onClick = {
+                                component.shareCollection(collection)
+                            }){
+                                Text("Share")
+                            }
+                        }
                     }
                     Button(onClick = { component.loadNewCollection() }) {
                         Text("Новый")

@@ -1,5 +1,7 @@
 package ru.mission.glossary.models
 
+import kotlinx.serialization.Serializable
+
 sealed interface WordTranslate {
 
     val word: String
@@ -7,6 +9,7 @@ sealed interface WordTranslate {
     val imageUrl: String?
 }
 
+@Serializable
 data class WordTranslateNoId(
     override val word: String,
     override val translate: String,
@@ -19,3 +22,14 @@ data class WordTranslateWithId(
     override val translate: String,
     override val imageUrl: String?,
 ) : WordTranslate
+
+inline fun <reified T : WordTranslate> WordTranslate.swipeWordAndTranslate(): T =
+    when (this) {
+        is WordTranslateNoId -> WordTranslateNoId(
+            word = translate, translate = word, imageUrl = imageUrl
+        )
+
+        is WordTranslateWithId -> WordTranslateWithId(
+            wordId = wordId, word = translate, translate = word, imageUrl = imageUrl
+        )
+    } as T
