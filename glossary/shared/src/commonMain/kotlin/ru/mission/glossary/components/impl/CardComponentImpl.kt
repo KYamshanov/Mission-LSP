@@ -13,7 +13,9 @@ class CardComponentImpl(
     subtitle: String,
     isDraggable: Boolean,
     imageUrl: String?,
+    contextSentence: String?,
     private val onSetImageUrl: ((url: String) -> Unit),
+    private val onSetContextSentence: ((sentence: String) -> Unit),
 ) : CardComponent, ComponentContext by componentContext {
 
     private val _model =
@@ -25,7 +27,8 @@ class CardComponentImpl(
                 isDraggable = isDraggable,
                 blurredSubtitle = true,
                 imageUrl = imageUrl,
-                isVisibleImage = false
+                isVisibleImage = false,
+                contextSentence = contextSentence,
             )
         )
     override val model: Value<CardComponent.Model> = _model
@@ -40,5 +43,10 @@ class CardComponentImpl(
     override fun setImageUrl(url: String) {
         onSetImageUrl(url)
         _model.update { it.copy(imageUrl = url, isVisibleImage = true) }
+    }
+
+    override fun setContextSentence(sentence: String) {
+        onSetContextSentence(sentence)
+        _model.update { it.copy(contextSentence = sentence) }
     }
 }

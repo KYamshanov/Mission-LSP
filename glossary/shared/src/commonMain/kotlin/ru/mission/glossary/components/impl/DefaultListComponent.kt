@@ -26,6 +26,7 @@ import kotlin.coroutines.CoroutineContext
 
 internal class DefaultListComponent(
     componentContext: ComponentContext,
+    withRefresh: Boolean,
     private val mainContext: CoroutineContext,
     private val defaultContext: CoroutineContext,
     private val onItemSelected: (String) -> Unit,
@@ -59,7 +60,8 @@ internal class DefaultListComponent(
                         subtitle = "Загрузка...",
                         isDraggable = false,
                         wordId = -1,
-                        imageUrl = null
+                        imageUrl = null,
+                        contextSentence = null
                     )
                 )
             },
@@ -94,7 +96,8 @@ internal class DefaultListComponent(
                     wordId = oldCardConfig.wordId,
                     word = oldCardConfig.title,
                     translate = oldCardConfig.subtitle,
-                    imageUrl = oldCardConfig.imageUrl
+                    imageUrl = oldCardConfig.imageUrl,
+                    contextSentence = oldCardConfig.contextSentence
                 )
                 dictionary.run {
                     removeWord(wordWithId)
@@ -117,19 +120,29 @@ internal class DefaultListComponent(
 
     private val scope = coroutineScope(mainContext + SupervisorJob())
 
-
     init {
         scope.launch {
             val dictionary = dictionary.getWordsWithTesting(collectionId).sortedBy { it.first.word }
             println("DEBUG:: Words loaded: $dictionary")
             words = dictionary
             navigation.navigate {
-                val initialCardConfigs = mutableListOf<CardConfig>()
-                dictionary.take(3).forEach { (word, _) ->
-                    initialCardConfigs.add(word.toConfig(id++))
+                if (withRefresh) {
+                    val initialCardConfigs = mutableListOf<CardConfig>()
+                    dictionary.take(3).forEach { (word, _) ->
+                        initialCardConfigs.add(word.toConfig(id++))
+                    }
+                    wordOffset = initialCardConfigs.size
+                    initialCardConfigs.setLastItem { it.copy(isDraggable = true) }
+                } else {
+                    val mutableWords = words.toMutableList()
+                    val initialCardConfigs = mutableListOf<CardConfig>()
+                    for (i in 0 until 3) {
+                        val word = getRandomWord(words)
+                        mutableWords.removeIf { it.first == word }
+                        initialCardConfigs.add(word.toConfig(id++))
+                    }
+                    initialCardConfigs.setLastItem { it.copy(isDraggable = true) }
                 }
-                wordOffset = initialCardConfigs.size
-                initialCardConfigs.setLastItem { it.copy(isDraggable = true) }
             }
         }
     }
@@ -145,8 +158,24 @@ internal class DefaultListComponent(
             onSetImageUrl = {
                 scope.launch {
                     dictionary.setImageUrl(config.wordId, it)
+                    words.indexOfFirst { it.first.wordId == config.wordId }.also { wordIndex ->
+                        words = words.toMutableList().apply {
+                            set(wordIndex, words[wordIndex].first.copy(imageUrl = it) to words[wordIndex].second)
+                        }
+                    }
                 }
-            }
+            },
+            onSetContextSentence = {
+                scope.launch {
+                    dictionary.setContextSentence(config.wordId, it)
+                    words.indexOfFirst { it.first.wordId == config.wordId }.also { wordIndex ->
+                        words = words.toMutableList().apply {
+                            set(wordIndex, words[wordIndex].first.copy(contextSentence = it) to words[wordIndex].second)
+                        }
+                    }
+                }
+            },
+            contextSentence = config.contextSentence,
         )
 
 
@@ -158,6 +187,7 @@ internal class DefaultListComponent(
         val subtitle: String,
         val isDraggable: Boolean = false,
         val imageUrl: String?,
+        val contextSentence: String?,
     )
 
 
@@ -186,7 +216,12 @@ internal class DefaultListComponent(
 
         private fun WordTranslateWithId.toConfig(id: Long): CardConfig =
             CardConfig(
-                cardUnicId = id, title = word, subtitle = translate, wordId = wordId, imageUrl = imageUrl
+                cardUnicId = id,
+                title = word,
+                subtitle = translate,
+                wordId = wordId,
+                imageUrl = imageUrl,
+                contextSentence = contextSentence
             )
     }
 }

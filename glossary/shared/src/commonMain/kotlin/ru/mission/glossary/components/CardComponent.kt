@@ -14,6 +14,8 @@ interface CardComponent {
 
     fun setImageUrl(url: String)
 
+    fun setContextSentence(sentence: String)
+
     data class Model(
         val id: Long,
         val title: String,
@@ -23,5 +25,6 @@ interface CardComponent {
         val blurredSubtitle: Boolean,
         val isVisibleImage: Boolean,
         val imageUrl: String?,
+        val contextSentence: String?,
     )
 }

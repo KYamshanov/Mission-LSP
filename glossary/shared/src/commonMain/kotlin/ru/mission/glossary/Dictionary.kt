@@ -22,6 +22,8 @@ internal interface Dictionary {
 
     suspend fun setImageUrl(wordId: Long, imageUrl: String): WordTranslateWithId
 
+    suspend fun setContextSentence(wordId: Long, contextSentence: String): WordTranslateWithId
+
     suspend fun removeWord(wordTranslateWithId: WordTranslateWithId)
 
     suspend fun saveWord(collectionId: Long, wordTranslate: WordTranslate): WordTranslateWithId

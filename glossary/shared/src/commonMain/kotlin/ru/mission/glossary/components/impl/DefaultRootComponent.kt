@@ -64,6 +64,7 @@ internal class DefaultRootComponent(
             dictionary = dictionary,
             collectionId = config.collectionId,
             back = { navigation.pop() },
+            withRefresh = config.withLearn,
         )
 
     private fun detailsComponent(componentContext: ComponentContext, config: Config.Details): DetailsComponent =
@@ -80,7 +81,7 @@ internal class DefaultRootComponent(
         LoadDictionaryComponentImpl(
             componentContext = componentContext,
             initialUrl = config.initialUrl,
-            onLoadDictionary = { navigation.replaceCurrent(DefaultRootComponent.Config.List(it)) },
+            onLoadDictionary = { navigation.replaceCurrent(Config.List(it, true)) },
             dictionary = dictionary,
             mainContext = mainContext,
             defaultContext = defaultContext,
@@ -98,8 +99,9 @@ internal class DefaultRootComponent(
             mainContext = mainContext,
             dictionary = dictionary,
             loadCollection = { navigation.push(Config.LoadDictionary()) },
-            openCollection = { navigation.push(Config.List(it)) },
+            openCollection = { navigation.push(Config.List(it, false)) },
             shareCollection = shareCollection,
+            openCollectionWithRefresh = { navigation.push(Config.List(it, true)) },
         )
 
     override fun onBackClicked(toIndex: Int) {
@@ -110,7 +112,7 @@ internal class DefaultRootComponent(
     private sealed interface Config {
 
         @Serializable
-        data class List(val collectionId: Long) : Config
+        data class List(val collectionId: Long, val withLearn: Boolean) : Config
 
         @Serializable
         data class Details(val item: String) : Config

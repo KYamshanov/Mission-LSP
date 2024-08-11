@@ -28,7 +28,13 @@ internal class SqDictionary(
 
     override suspend fun getWords(collectionId: Long): List<WordTranslateWithId> = withContext(ioContext) {
         database.dictionaryQueries.selectCollectionDictonary(collectionId).executeAsList()
-            .map { WordTranslateWithId(it.wordId, it.word, it.translate, it.imageUrl) }
+            .map { WordTranslateWithId(
+                wordId = it.wordId,
+                word = it.word,
+                translate = it.translate,
+                imageUrl = it.imageUrl,
+                contextSentence = it.contextSentence
+            ) }
     }
 
     override suspend fun saveCollection(withName: String, words: List<WordTranslate>): Collection =
@@ -66,7 +72,8 @@ internal class SqDictionary(
                         wordId = it.wordId,
                         word = it.word,
                         translate = it.translate,
-                        imageUrl = it.imageUrl
+                        imageUrl = it.imageUrl,
+                        contextSentence = it.contextSentence,
                     ) to testingModel
                 }
         }
@@ -108,6 +115,16 @@ internal class SqDictionary(
         }
     }
 
+    override suspend fun setContextSentence(wordId: Long, contextSentence: String): WordTranslateWithId =
+        withContext(ioContext) {
+            with(database.dictionaryQueries) {
+                setWordContextSentence(
+                    contextSentence = contextSentence, id = wordId
+                )
+                selectWord(wordId).executeAsOne().toWordTranslateWithId()
+            }
+        }
+
     override suspend fun removeWord(wordTranslateWithId: WordTranslateWithId) {
         with(database.dictionaryQueries) {
             deleteWord(wordTranslateWithId.wordId)
@@ -130,7 +147,8 @@ internal class SqDictionary(
                         wordId = dictionary.id,
                         word = dictionary.word,
                         translate = dictionary.translate,
-                        imageUrl = dictionary.imageUrl
+                        imageUrl = dictionary.imageUrl,
+                        contextSentence = dictionary.contextSentence
                     )
                 }
             }
@@ -139,5 +157,5 @@ internal class SqDictionary(
 
 private fun DataDictionary.toWordTranslateWithId(): WordTranslateWithId =
     WordTranslateWithId(
-        wordId = id, word = word, translate = translate, imageUrl = imageUrl
+        wordId = id, word = word, translate = translate, imageUrl = imageUrl, contextSentence = contextSentence
     )

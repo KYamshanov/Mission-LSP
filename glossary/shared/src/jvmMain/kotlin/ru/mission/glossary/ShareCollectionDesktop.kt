@@ -23,5 +23,5 @@ internal class ShareCollectionDesktop : ShareCollection {
 
 private fun WordTranslate.toWordTranslateNoId(): WordTranslateNoId =
     WordTranslateNoId(
-        word = word, translate = translate, imageUrl = imageUrl
+        word = word, translate = translate, imageUrl = imageUrl, contextSentence = contextSentence
     )

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterialApi::class)
+
 package ru.mission.glossary
 
 import androidx.compose.animation.core.*
@@ -11,9 +13,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material.*
+import androidx.compose.material.ExposedDropdownMenuDefaults.textFieldColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,7 +25,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.vector.DefaultTintBlendMode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.IntSize
@@ -33,9 +33,7 @@ import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.arkivanov.decompose.router.stack.items
 import com.github.panpf.sketch.AsyncImage
-import com.github.panpf.sketch.LocalPlatformContext
 import com.github.panpf.sketch.PlatformContext
-import com.github.panpf.sketch.SingletonSketch
 import com.github.panpf.sketch.request.ImageRequest
 import glossary.ui.compose.kit.generated.resources.Res
 import glossary.ui.compose.kit.generated.resources.close
@@ -126,15 +124,60 @@ fun ListContent(component: ListComponent, modifier: Modifier = Modifier) {
             key(instance) {
                 val indexFromEnd = lastItems.lastIndex - index
                 val model by instance.model.subscribeAsState()
+                if (model.isDraggable) {  //means that card on the front
+                    if (!model.blurredSubtitle) {
+                        Button(
+                            modifier = Modifier.align(Alignment.CenterEnd),
+                            onClick = { component.swipeWordAndTranslate(index) }) {
+                            Text("Swipe")
+                        }
+                    }
 
-                if (!model.blurredSubtitle) {
-                    Button(
-                        modifier = Modifier.align(Alignment.CenterEnd),
-                        onClick = { component.swipeWordAndTranslate(index) }) {
-                        Text("Swipe")
+                    if (!model.blurredSubtitle) {
+                        //Editor context sentence
+                        var editedContextSentence by remember { mutableStateOf(model.contextSentence.orEmpty()) }
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .windowInsetsPadding(WindowInsets.safeDrawing),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            TextField(
+                                modifier = Modifier.height(50.dp).widthIn(max = 300.dp),
+                                value = editedContextSentence,
+                                onValueChange = { editedContextSentence = it },
+                                colors = textFieldColors(textColor = MissionTheme.colors.primary),
+                            )
+                            if (editedContextSentence != model.contextSentence.orEmpty()) {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(12.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Image(
+                                        modifier = Modifier
+                                            .clip(CircleShape)
+                                            .clickable { instance.setContextSentence(editedContextSentence) }
+                                            .padding(8.dp),
+                                        painter = painterResource(Res.drawable.ic_done),
+                                        contentDescription = "done",
+                                        colorFilter = ColorFilter.tint(color = Color.White)
+                                    )
+                                }
+                            }
+                        }
+                    } else if (model.contextSentence != null) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                        ) {
+                            Text(
+                                text = model.contextSentence.orEmpty(),
+                                style = MissionTheme.typography.inputTextWhite
+                            )
+                        }
                     }
                 }
-
                 DraggableCard(
                     layoutSize = layoutSize,
                     offsetY = indexFromEnd * -16.dp.toPx(),

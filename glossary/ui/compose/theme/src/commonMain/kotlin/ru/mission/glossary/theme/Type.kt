@@ -46,6 +46,7 @@ data class MissionTypography(
 
     val inputHint = mainAppearance + smallMedium + gray
     val inputText = mainAppearance + medium + black
+    val inputTextWhite = mainAppearance + medium + white
 
     val topBarTitle = mainAppearance + hugeMedium + white
     val topBarSecondaryTitle = mainAppearance + large + white

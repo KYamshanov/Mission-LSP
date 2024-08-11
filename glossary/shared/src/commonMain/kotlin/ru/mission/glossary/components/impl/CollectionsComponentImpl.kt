@@ -20,7 +20,8 @@ internal class CollectionsComponentImpl(
     private val shareCollection: ShareCollection,
     private val dictionary: Dictionary,
     private val loadCollection: () -> Unit,
-    private val openCollection: (Long) -> Unit
+    private val openCollection: (Long) -> Unit,
+    private val openCollectionWithRefresh: (Long) -> Unit
 ) : ComponentContext by componentContext, CollectionsComponent {
 
     private val _model: MutableValue<CollectionsComponent.Model> = MutableValue(CollectionsComponent.Loading)

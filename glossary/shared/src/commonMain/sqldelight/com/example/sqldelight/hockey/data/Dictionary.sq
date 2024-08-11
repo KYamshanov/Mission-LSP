@@ -14,7 +14,8 @@ CREATE TABLE dictionary (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     word TEXT NOT NULL,
     translate TEXT NOT NULL,
-    imageUrl TEXT
+    imageUrl TEXT,
+    contextSentence TEXT
 );
 
 CREATE TABLE testing (
@@ -82,6 +83,11 @@ VALUES (?,?,?,?);
 setWordImageUrl:
 UPDATE dictionary
 SET imageUrl = ?
+WHERE id = ?;
+
+setWordContextSentence:
+UPDATE dictionary
+SET contextSentence = ?
 WHERE id = ?;
 
 selectWord:
