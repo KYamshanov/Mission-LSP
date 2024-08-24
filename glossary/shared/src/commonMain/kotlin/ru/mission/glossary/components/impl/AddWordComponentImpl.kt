@@ -9,16 +9,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.mission.glossary.Dictionary
-import ru.mission.glossary.LoadSharedCollection
-import ru.mission.glossary.SingleAppParser
 import ru.mission.glossary.components.AddWordComponent
-import ru.mission.glossary.components.EditDictionaryComponent
-import ru.mission.glossary.components.LoadDictionaryComponent
-import ru.mission.glossary.models.DictionaryGetResult
-import ru.mission.glossary.models.WordTranslate
 import ru.mission.glossary.models.WordTranslateNoId
-import ru.mission.glossary.models.WordsDictionary
-import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 internal class AddWordComponentImpl(
@@ -46,14 +38,23 @@ internal class AddWordComponentImpl(
     override fun save() {
         scope.launch {
             val wordModel = _model.value
-            withContext(defaultContext){
+            withContext(defaultContext) {
                 dictionary.saveWord(
                     collectionId,
-                    WordTranslateNoId(wordModel.word, wordModel.translate, wordModel.imageUrl, wordModel.contextSentence)
+                    WordTranslateNoId(
+                        wordModel.word,
+                        wordModel.translate,
+                        wordModel.imageUrl,
+                        wordModel.contextSentence
+                    )
                 )
             }
             back()
         }
+    }
+
+    override fun exit() {
+        back()
     }
 
 }
