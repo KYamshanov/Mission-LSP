@@ -5,8 +5,6 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
-import com.arkivanov.essenty.lifecycle.doOnCreate
-import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.essenty.lifecycle.doOnStart
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -14,7 +12,6 @@ import ru.mission.glossary.Dictionary
 import ru.mission.glossary.ShareCollection
 import ru.mission.glossary.components.CollectionsComponent
 import ru.mission.glossary.models.Collection
-import ru.mission.glossary.models.WordsDictionary
 import kotlin.coroutines.CoroutineContext
 
 internal class CollectionsComponentImpl(
@@ -47,9 +44,11 @@ internal class CollectionsComponentImpl(
     private val scope = coroutineScope(mainContext + SupervisorJob())
 
     init {
-        scope.launch {
-            val collections = dictionary.getCollections()
-            _model.update { CollectionsComponent.Model.Done(collections) }
+        lifecycle.doOnStart {
+            scope.launch {
+                val collections = dictionary.getCollections()
+                _model.update { CollectionsComponent.Model.Done(collections) }
+            }
         }
     }
 
