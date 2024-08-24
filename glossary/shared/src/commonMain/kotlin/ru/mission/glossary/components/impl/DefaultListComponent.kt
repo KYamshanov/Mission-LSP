@@ -7,7 +7,6 @@ import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.navigate
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
-import com.arkivanov.essenty.lifecycle.doOnStart
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -138,7 +137,7 @@ internal class DefaultListComponent(
                     val mutableWords = words.toMutableList()
                     val initialCardConfigs = mutableListOf<CardConfig>()
                     for (i in 0 until 3) {
-                        val word = getRandomWord(words)
+                        val word = getRandomWord(mutableWords)
                         mutableWords.removeIf { it.first == word }
                         initialCardConfigs.add(word.toConfig(id++))
                     }
