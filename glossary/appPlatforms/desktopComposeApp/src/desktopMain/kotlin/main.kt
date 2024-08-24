@@ -1,6 +1,8 @@
 import androidx.compose.ui.awt.ComposePanel
+import androidx.compose.ui.window.rememberWindowState
 import ca.fredperr.customtitlebar.titlebar.TBJFrame
 import com.arkivanov.decompose.DefaultComponentContext
+import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import org.koin.core.context.GlobalContext
 import ru.mission.glossary.App
@@ -12,14 +14,7 @@ import javax.swing.*
 
 fun main() {
     initKoin { }
-    val lifecycle = LifecycleRegistry()
 
-    // Always create the root component outside Compose on the UI thread
-    val root =
-        runOnUiThread {
-            val componentContext = DefaultComponentContext(lifecycle = lifecycle)
-            GlobalContext.get().get<RootComponentFactory>().create(componentContext)
-        }
 
 
     SwingUtilities.invokeLater {
@@ -35,6 +30,14 @@ fun main() {
         val controlPanel = ComposePanel()
         frame.frameContentPane.add(controlPanel)
         controlPanel.setContent {
+            val lifecycle = LifecycleRegistry()
+            val windowState = rememberWindowState()
+            LifecycleController(lifecycle, windowState)
+            val root =
+                runOnUiThread {
+                    val componentContext = DefaultComponentContext(lifecycle = lifecycle)
+                    GlobalContext.get().get<RootComponentFactory>().create(componentContext)
+                }
             App(rootComponent = root)
         }
     }

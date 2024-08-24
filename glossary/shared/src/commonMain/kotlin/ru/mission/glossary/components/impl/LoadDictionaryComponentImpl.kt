@@ -28,7 +28,11 @@ internal class LoadDictionaryComponentImpl(
     private val loadSharedCollection: LoadSharedCollection,
 ) : LoadDictionaryComponent, ComponentContext by componentContext {
 
-    private val _model = MutableValue(LoadDictionaryComponent.Model(initialUrl, ""))
+    private val _model = MutableValue(LoadDictionaryComponent.Model(
+        url = initialUrl,
+        filePath = "",
+        newCollectionTitle = ""
+    ))
     override val model: Value<LoadDictionaryComponent.Model> = _model
 
     private val scope = coroutineScope(mainContext + SupervisorJob())
@@ -81,6 +85,17 @@ internal class LoadDictionaryComponentImpl(
                 .onSuccess {
                     onLoadDictionary(it.id)
                 }
+        }
+    }
+
+    override fun setNewCollectionTitle(title: String) {
+        _model.update { it.copy(newCollectionTitle = title) }
+    }
+
+    override fun createNewCollection() {
+        scope.launch {
+            val newCollectionName = _model.value.newCollectionTitle
+            dictionary.saveCollection(newCollectionName, emptyList())
         }
     }
 }

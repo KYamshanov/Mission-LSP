@@ -3,7 +3,10 @@ package ru.mission.glossary.components.impl
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.*
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.lifecycle.Lifecycle
+import com.arkivanov.essenty.lifecycle.subscribe
 import kotlinx.serialization.Serializable
+import org.koin.core.definition.Callbacks
 import ru.mission.glossary.Dictionary
 import ru.mission.glossary.LoadSharedCollection
 import ru.mission.glossary.ShareCollection
@@ -51,6 +54,12 @@ internal class DefaultRootComponent(
                     config
                 )
             )
+
+            is Config.EditDictionary -> {
+                RootComponent.Child.EditDictionaryChild(
+                    editDictionaryComponent(componentContext, config)
+                )
+            }
         }
 
     private fun listComponent(componentContext: ComponentContext, config: Config.List): ListComponent =
@@ -102,6 +111,20 @@ internal class DefaultRootComponent(
             openCollection = { navigation.push(Config.List(it, false)) },
             shareCollection = shareCollection,
             openCollectionWithRefresh = { navigation.push(Config.List(it, true)) },
+            editCollection = { navigation.push(Config.EditDictionary(it)) }
+        )
+
+    private fun editDictionaryComponent(
+        componentContext: ComponentContext,
+        config: Config.EditDictionary,
+    ): EditDictionaryComponent =
+        EditDictionaryComponentImpl(
+            componentContext = componentContext,
+            mainContext = mainContext,
+            defaultContext = defaultContext,
+            dictionary = dictionary,
+            collectionId = config.collectionId,
+            exit = { navigation.pop() }
         )
 
     override fun onBackClicked(toIndex: Int) {
@@ -122,6 +145,9 @@ internal class DefaultRootComponent(
 
         @Serializable
         data object Collections : Config
+
+        @Serializable
+        data class EditDictionary(val collectionId: Long) : Config
     }
 }
 

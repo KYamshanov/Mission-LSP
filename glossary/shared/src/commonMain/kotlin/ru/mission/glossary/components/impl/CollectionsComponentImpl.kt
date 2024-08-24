@@ -5,6 +5,9 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
+import com.arkivanov.essenty.lifecycle.doOnCreate
+import com.arkivanov.essenty.lifecycle.doOnDestroy
+import com.arkivanov.essenty.lifecycle.doOnStart
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import ru.mission.glossary.Dictionary
@@ -21,10 +24,11 @@ internal class CollectionsComponentImpl(
     private val dictionary: Dictionary,
     private val loadCollection: () -> Unit,
     private val openCollection: (Long) -> Unit,
-    private val openCollectionWithRefresh: (Long) -> Unit
+    private val openCollectionWithRefresh: (Long) -> Unit,
+    private val editCollection: (Long) -> Unit,
 ) : ComponentContext by componentContext, CollectionsComponent {
 
-    private val _model: MutableValue<CollectionsComponent.Model> = MutableValue(CollectionsComponent.Loading)
+    private val _model: MutableValue<CollectionsComponent.Model> = MutableValue(CollectionsComponent.Model.Loading)
 
     override val model: Value<CollectionsComponent.Model>
         get() = _model
@@ -45,9 +49,11 @@ internal class CollectionsComponentImpl(
     init {
         scope.launch {
             val collections = dictionary.getCollections()
-            _model.update { CollectionsComponent.Done(collections) }
+            _model.update { CollectionsComponent.Model.Done(collections) }
         }
     }
 
     override fun loadNewCollection() = loadCollection()
+
+    override fun editCollection(collection: Collection) = editCollection(collection.id)
 }

@@ -46,5 +46,16 @@ fun LoadDictionaryContent(component: LoadDictionaryComponent, modifier: Modifier
                 Text("Load Dictionary from file")
             }
         }
+
+        Column {
+            TextField(
+                value = model.newCollectionTitle,
+                onValueChange = { component.setNewCollectionTitle(it) }
+            )
+
+            Button(onClick = { component.createNewCollection() }) {
+                Text("Create Dictionary with title")
+            }
+        }
     }
 }

@@ -14,8 +14,12 @@ interface LoadDictionaryComponent {
 
     fun onClickLoadDictionaryFromFile()
 
+    fun setNewCollectionTitle(title: String)
+    fun createNewCollection()
+
     data class Model(
         val url: String,
         val filePath: String,
+        val newCollectionTitle: String,
     )
 }

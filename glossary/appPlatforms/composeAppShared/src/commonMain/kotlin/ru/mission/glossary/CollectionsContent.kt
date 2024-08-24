@@ -28,15 +28,23 @@ fun CollectionsContent(component: CollectionsComponent, modifier: Modifier = Mod
         }
     ) {
         when (val m = model) {
-            is CollectionsComponent.Done -> {
+            is CollectionsComponent.Model.Done -> {
                 Column {
                     for ((index, collection) in m.collections.withIndex()) {
                         Row {
-                            Text(collection.name, modifier = Modifier.clickable { component.clickOnCollection(collection) })
+                            Text(
+                                collection.name,
+                                modifier = Modifier.clickable { component.clickOnCollection(collection) })
                             Button(onClick = {
                                 component.shareCollection(collection)
-                            }){
+                            }) {
                                 Text("Share")
+                            }
+
+                            Button(onClick = {
+                                component.editCollection(collection)
+                            }) {
+                                Text("Edit")
                             }
                         }
                     }
@@ -46,7 +54,7 @@ fun CollectionsContent(component: CollectionsComponent, modifier: Modifier = Mod
                 }
             }
 
-            CollectionsComponent.Loading -> {
+            CollectionsComponent.Model.Loading -> {
                 Text("Загрузка...")
             }
         }

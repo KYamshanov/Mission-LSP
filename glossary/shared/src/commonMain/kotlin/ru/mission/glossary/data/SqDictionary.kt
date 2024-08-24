@@ -28,13 +28,15 @@ internal class SqDictionary(
 
     override suspend fun getWords(collectionId: Long): List<WordTranslateWithId> = withContext(ioContext) {
         database.dictionaryQueries.selectCollectionDictonary(collectionId).executeAsList()
-            .map { WordTranslateWithId(
-                wordId = it.wordId,
-                word = it.word,
-                translate = it.translate,
-                imageUrl = it.imageUrl,
-                contextSentence = it.contextSentence
-            ) }
+            .map {
+                WordTranslateWithId(
+                    wordId = it.wordId,
+                    word = it.word,
+                    translate = it.translate,
+                    imageUrl = it.imageUrl,
+                    contextSentence = it.contextSentence
+                )
+            }
     }
 
     override suspend fun saveCollection(withName: String, words: List<WordTranslate>): Collection =
@@ -143,6 +145,29 @@ internal class SqDictionary(
                     val newWordId = lastInsertRowId().executeAsOne()
                     insertCollectionWords(collectionId, newWordId)
                     val dictionary = selectWord(newWordId).executeAsOne()
+                    WordTranslateWithId(
+                        wordId = dictionary.id,
+                        word = dictionary.word,
+                        translate = dictionary.translate,
+                        imageUrl = dictionary.imageUrl,
+                        contextSentence = dictionary.contextSentence
+                    )
+                }
+            }
+        }
+
+    override suspend fun updateWord(word: WordTranslateWithId): WordTranslateWithId =
+        withContext(ioContext) {
+            with(database.dictionaryQueries) {
+                transactionWithResult {
+                    this@with.updateDictionary(
+                        word = word.word,
+                        translate = word.translate,
+                        imageUrl = word.imageUrl,
+                        contextSentence = word.contextSentence,
+                        id = word.wordId,
+                    )
+                    val dictionary = selectWord(word.wordId).executeAsOne()
                     WordTranslateWithId(
                         wordId = dictionary.id,
                         word = dictionary.word,

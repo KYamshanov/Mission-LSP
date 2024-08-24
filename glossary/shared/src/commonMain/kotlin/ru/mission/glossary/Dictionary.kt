@@ -27,4 +27,6 @@ internal interface Dictionary {
     suspend fun removeWord(wordTranslateWithId: WordTranslateWithId)
 
     suspend fun saveWord(collectionId: Long, wordTranslate: WordTranslate): WordTranslateWithId
+
+    suspend fun updateWord(word: WordTranslateWithId): WordTranslateWithId
 }

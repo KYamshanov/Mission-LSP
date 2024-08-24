@@ -21,6 +21,7 @@ fun RootContent(component: RootComponent, modifier: Modifier = Modifier) {
             is DetailsChild -> DetailsContent(component = child.component)
             is RootComponent.Child.LoadDictionaryChild -> LoadDictionaryContent(component = child.component)
             is RootComponent.Child.CollectionsChild -> CollectionsContent(component = child.component)
+            is RootComponent.Child.EditDictionaryChild -> EditDictionaryContent(component = child.component)
         }
     }
 }

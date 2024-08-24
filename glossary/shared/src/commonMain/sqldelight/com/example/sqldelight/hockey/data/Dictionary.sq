@@ -98,3 +98,8 @@ WHERE id = ?;
 deleteWord:
 DELETE FROM dictionary
 WHERE id = ?;
+
+updateDictionary:
+UPDATE dictionary
+SET word = ?, translate= ?, imageUrl= ?, contextSentence= ?
+WHERE id = ?;

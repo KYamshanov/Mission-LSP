@@ -12,11 +12,14 @@ interface CollectionsComponent {
 
     fun loadNewCollection()
 
-    sealed interface Model
+    fun editCollection(collection: Collection)
 
-    data object Loading : Model
+    sealed interface Model {
 
-    data class Done(
-        val collections: List<Collection>,
-    ) : Model
+        data object Loading : Model
+
+        data class Done(
+            val collections: List<Collection>,
+        ) : Model
+    }
 }
